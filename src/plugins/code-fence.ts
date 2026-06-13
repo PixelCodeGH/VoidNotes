@@ -14,10 +14,11 @@ interface CodeFence {
 let counter = 0;
 
 function nextId(): string {
-  return `__CODE_FENCE_${counter++}__`;
+  return `\x00CF${counter++}\x00`;
 }
 
 export function extractCodeFences(text: string): { protected: string; fences: Map<string, CodeFence> } {
+  counter = 0;
   const fences = new Map<string, CodeFence>();
   let result = text;
 

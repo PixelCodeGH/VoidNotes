@@ -1,6 +1,9 @@
 declare global {
   interface Window {
     electronAPI: {
+      minimize: () => Promise<void>;
+      maximize: () => Promise<void>;
+      close: () => Promise<void>;
       selectVault: () => Promise<string | null>;
       setVault: (p: string) => Promise<boolean>;
       getVault: () => Promise<string | null>;

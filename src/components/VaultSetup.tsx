@@ -6,17 +6,9 @@ interface VaultSetupProps {
 
 export default function VaultSetup({ onVaultSelect }: VaultSetupProps) {
   const handleClick = async () => {
-    // File System Access API — tylko w Chromium/Electron
-    if ("showDirectoryPicker" in window) {
-      try {
-        const dirHandle = await (window as any).showDirectoryPicker();
-        onVaultSelect(dirHandle.name);
-      } catch {
-        // Użytkownik anulował
-      }
-    } else {
-      // Fallback — użyj domyślnej ścieżki
-      onVaultSelect("notes");
+    const vaultPath = await window.electronAPI.selectVault();
+    if (vaultPath) {
+      onVaultSelect(vaultPath);
     }
   };
 

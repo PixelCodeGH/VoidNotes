@@ -31,18 +31,20 @@ export default function NoteParser({ content, onWikiLinkClick }: NoteParserProps
 
   return (
     <div className="pane-preview visible">
-      <div
-        className="md-content"
-        onClick={(e) => {
-          const target = (e.target as HTMLElement).closest(".wiki-link");
-          if (target && onWikiLinkClick) {
-            onWikiLinkClick(target.getAttribute("data-target") || "");
-          }
-        }}
-      >
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-          {processed}
-        </ReactMarkdown>
+      <div className="preview-wrapper">
+        <div
+          className="md-content"
+          onClick={(e) => {
+            const target = (e.target as HTMLElement).closest(".wiki-link");
+            if (target && onWikiLinkClick) {
+              onWikiLinkClick(target.getAttribute("data-target") || "");
+            }
+          }}
+        >
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {processed}
+          </ReactMarkdown>
+        </div>
       </div>
     </div>
   );

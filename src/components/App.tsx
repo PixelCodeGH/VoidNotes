@@ -5,6 +5,9 @@ import NoteParser from "./NoteParser";
 import CommandPalette from "./CommandPalette";
 import VaultSetup from "./VaultSetup";
 import StatusBar from "./StatusBar";
+import TrafficLights from "./TrafficLights";
+import Settings from "./Settings";
+import Help from "./Help";
 import { parseFrontmatter, buildBacklinks } from "../plugins/frontmatter";
 
 let saveTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -17,6 +20,8 @@ export default function App() {
   const [previewMode, setPreviewMode] = useState(false);
   const [backlinks, setBacklinks] = useState<Map<string, string[]>>(new Map());
   const [showSearch, setShowSearch] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [saved, setSaved] = useState(true);
   const [lastModified, setLastModified] = useState<string | null>(null);
   const allContents = useRef<Map<string, string>>(new Map());
@@ -82,7 +87,6 @@ export default function App() {
     setRawContent(value);
     setSaved(false);
     if (!activeNote) return;
-
     if (saveTimeout) clearTimeout(saveTimeout);
     saveTimeout = setTimeout(async () => {
       await window.electronAPI.saveNote(activeNote, value);
@@ -114,6 +118,17 @@ export default function App() {
     setPreviewMode((prev) => !prev);
   }, []);
 
+  const handleSwitchVault = useCallback(async () => {
+    setShowSettings(false);
+    const vaultPath = await window.electronAPI.selectVault();
+    if (vaultPath) {
+      await window.electronAPI.setVault(vaultPath);
+      const files = await refreshNotes();
+      await refreshBacklinks(files);
+      if (files.length > 0) openNote(files[0]);
+    }
+  }, [refreshNotes, refreshBacklinks, openNote]);
+
   useEffect(() => {
     if (!vaultReady) return;
     refreshNotes().then((files) => {
@@ -124,22 +139,12 @@ export default function App() {
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === "e") {
-        e.preventDefault();
-        togglePreview();
-      }
-      if (e.ctrlKey && e.key === "p") {
-        e.preventDefault();
-        setShowSearch((prev) => !prev);
-      }
-      if (e.ctrlKey && e.key === "s") {
-        e.preventDefault();
-        handleManualSave();
-      }
-      if (e.ctrlKey && e.key === "n") {
-        e.preventDefault();
-        handleNewNote();
-      }
+      if (e.ctrlKey && e.key === "e") { e.preventDefault(); togglePreview(); }
+      if (e.ctrlKey && e.key === "p") { e.preventDefault(); setShowSearch((v) => !v); }
+      if (e.ctrlKey && e.key === "s") { e.preventDefault(); handleManualSave(); }
+      if (e.ctrlKey && e.key === "n") { e.preventDefault(); handleNewNote(); }
+      if (e.ctrlKey && e.key === ",") { e.preventDefault(); setShowSettings((v) => !v); }
+      if (e.key === "F1") { e.preventDefault(); setShowHelp((v) => !v); }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -162,18 +167,23 @@ export default function App() {
         onNew={handleNewNote}
         onDelete={handleDeleteNote}
         onOpenSearch={() => setShowSearch(true)}
+        onOpenSettings={() => setShowSettings(true)}
+        onOpenHelp={() => setShowHelp(true)}
       />
 
       <div className="editor-area">
         <div className="top-bar">
-          <div className="breadcrumb">
-            {activeNote ? (
-              <span className="breadcrumb-current">
-                {activeNote.split("/").pop()?.replace(/\.md$/, "") || ""}
-              </span>
-            ) : (
-              <span>No note open</span>
-            )}
+          <div className="top-bar-left">
+            <TrafficLights />
+            <div className="breadcrumb">
+              {activeNote ? (
+                <span className="breadcrumb-current">
+                  {activeNote.split("/").pop()?.replace(/\.md$/, "") || ""}
+                </span>
+              ) : (
+                <span>No note open</span>
+              )}
+            </div>
           </div>
           <div className="top-bar-actions">
             <button className={`btn-mode ${previewMode ? "" : "active"}`} onClick={togglePreview}>
@@ -189,28 +199,16 @@ export default function App() {
           {!previewMode && activeNote && (
             <div className="pane-editor pane-enter">
               <div className="editor-wrapper">
-                <NoteEditor
-                  content={rawContent}
-                  onChange={handleContentChange}
-                  noteNames={notes}
-                />
+                <NoteEditor content={rawContent} onChange={handleContentChange} noteNames={notes} />
               </div>
             </div>
           )}
           {previewMode && activeNote && (
-            <NoteParser
-              content={rawContent}
-              onWikiLinkClick={handleWikiLinkClick}
-            />
+            <NoteParser content={rawContent} onWikiLinkClick={handleWikiLinkClick} />
           )}
         </div>
 
-        <StatusBar
-          content={rawContent}
-          noteCount={notes.length}
-          activeNote={activeNote}
-          saved={saved}
-        />
+        <StatusBar content={rawContent} noteCount={notes.length} activeNote={activeNote} saved={saved} />
       </div>
 
       {(noteBacklinks.length > 0 || noteDate) && (
@@ -228,13 +226,10 @@ export default function App() {
                   fontSize: "var(--font-size-xs)",
                   marginRight: "4px",
                   marginBottom: "4px",
-                }}>
-                  #{tag}
-                </span>
+                }}>#{tag}</span>
               ))}
             </div>
           )}
-
           {noteDate && (
             <div className="right-panel-section">
               <div className="right-panel-title">Info</div>
@@ -244,16 +239,11 @@ export default function App() {
               </div>
             </div>
           )}
-
           {noteBacklinks.length > 0 && (
             <div className="right-panel-section">
               <div className="right-panel-title">Backlinks</div>
               {noteBacklinks.map((file) => (
-                <div
-                  key={file}
-                  className="backlink-item"
-                  onClick={() => openNote(file)}
-                >
+                <div key={file} className="backlink-item" onClick={() => openNote(file)}>
                   {file.split("/").pop()?.replace(/\.md$/, "") || file}
                 </div>
               ))}
@@ -265,12 +255,17 @@ export default function App() {
       {showSearch && (
         <CommandPalette
           notes={notes}
-          onSelect={(file) => {
-            setShowSearch(false);
-            openNote(file);
-          }}
+          onSelect={(file) => { setShowSearch(false); openNote(file); }}
           onClose={() => setShowSearch(false)}
         />
+      )}
+
+      {showSettings && (
+        <Settings onClose={() => setShowSettings(false)} onSwitchVault={handleSwitchVault} />
+      )}
+
+      {showHelp && (
+        <Help onClose={() => setShowHelp(false)} />
       )}
     </div>
   );

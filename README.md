@@ -18,6 +18,8 @@ A minimalist, brutalist-styled Markdown **second-brain** notepad built with Elec
 - **File Tree** — collapsible folder structure in the sidebar
 - **Dark Mode** — Obsidian-inspired color palette
 - **Auto-save** — debounced save (500ms) + manual `Ctrl+S`
+- **macOS Traffic Lights** — native-feeling window controls
+- **Settings & Help** — accessible from sidebar or keyboard shortcuts
 
 ## Tech Stack
 
@@ -72,12 +74,14 @@ npm run dev    # Start Vite dev server + Electron (hot reload)
 | `Ctrl+E` | Toggle Edit / Preview |
 | `Ctrl+P` | Command Palette (fuzzy search) |
 | `Ctrl+N` | New note |
+| `Ctrl+,` | Open Settings |
+| `F1` | Open Help & Documentation |
 
 ## Project Structure
 
 ```
 ├── electron/
-│   ├── main.ts              # Electron main process (IPC, file ops)
+│   ├── main.ts              # Electron main process (IPC, window, file ops)
 │   └── preload.ts           # contextBridge API
 ├── src/
 │   ├── main.tsx             # React entry point
@@ -89,7 +93,10 @@ npm run dev    # Start Vite dev server + Electron (hot reload)
 │   │   ├── NoteParser.tsx   # Markdown render pipeline
 │   │   ├── CommandPalette.tsx # Ctrl+P search modal
 │   │   ├── VaultSetup.tsx   # Vault folder picker
-│   │   └── StatusBar.tsx    # Word count + save status
+│   │   ├── StatusBar.tsx    # Word count + save status
+│   │   ├── TrafficLights.tsx # macOS-style window controls
+│   │   ├── Settings.tsx     # Settings modal
+│   │   └── Help.tsx         # Help & documentation modal
 │   ├── plugins/
 │   │   ├── frontmatter.ts   # gray-matter + backlinks
 │   │   ├── wiki-links.ts    # [[link]] parser
