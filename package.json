@@ -3,19 +3,59 @@
   "version": "0.2.0",
   "description": "Second-brain notatnik Markdown oparty o Electron + React + CodeMirror 6",
   "main": "dist-electron/main.js",
+  "author": "PixelCodeGH",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PixelCodeGH/VoidNotes.git"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && tsc -p tsconfig.electron.json",
     "build:renderer": "vite build",
     "build:main": "tsc -p tsconfig.electron.json",
     "start": "electron .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "dist": "npm run build && npx electron-builder --win",
+    "dist:win": "npm run build && npx electron-builder --win --publish never",
+    "dist:publish": "npm run build && npx electron-builder --win --publish always"
+  },
+  "build": {
+    "appId": "com.pixelcodegh.voidnotes",
+    "productName": "Void Notes",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Void Notes"
+    }
   },
   "devDependencies": {
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.2",
     "electron": "^35.7.5",
+    "electron-builder": "^23.6.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
   },
