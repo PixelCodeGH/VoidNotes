@@ -40,9 +40,7 @@ A minimalist, brutalist-styled Markdown **second-brain** notepad built with Elec
 
 ### Install
 
-- **Windows**: download the installer from the [Releases](https://github.com/PixelCodeGH/VoidNotes/releases) page.
-
-**Note:** `setup.bat` and `setup.sh` are developer setup scripts and are not intended for end users.
+Download the latest installer from the [Releases](https://github.com/PixelCodeGH/VoidNotes/releases) page.
 
 ### Development
 
