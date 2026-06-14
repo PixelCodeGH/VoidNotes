@@ -6,7 +6,6 @@ import { bracketMatching, indentOnInput } from "@codemirror/language";
 import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
 import { autocompletion, CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { vim } from "@replit/codemirror-vim";
-import { pluginSystem } from "../plugins/pluginSystem";
 
 interface NoteEditorProps {
   content: string;
@@ -103,8 +102,6 @@ export default function NoteEditor({ content, onChange, noteNames, vimMode }: No
     [noteNames]
   );
 
-  const pluginExtensions = pluginSystem.getAllEditorExtensions();
-
   const extensions = useMemo(() => {
     const exts = [
       lineNumbers(),
@@ -118,21 +115,16 @@ export default function NoteEditor({ content, onChange, noteNames, vimMode }: No
       brutalTheme,
       EditorView.lineWrapping,
       wikiCompletion,
-      ...pluginExtensions,
     ];
     if (vimMode) {
       exts.unshift(vim());
     }
     return exts;
-  }, [wikiCompletion, vimMode, pluginExtensions.length]);
+  }, [wikiCompletion, vimMode]);
 
   const handleChange = useCallback((value: string) => {
     onChange(value);
   }, [onChange]);
-
-  const handleCreateEditor = useCallback((view: EditorView) => {
-    pluginSystem.setEditorView(view);
-  }, []);
 
   return (
     <CodeMirror
@@ -142,7 +134,6 @@ export default function NoteEditor({ content, onChange, noteNames, vimMode }: No
       theme="dark"
       height="100%"
       style={{ height: "100%" }}
-      onCreateEditor={handleCreateEditor}
     />
   );
 }
