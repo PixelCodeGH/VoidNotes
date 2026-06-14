@@ -32,20 +32,15 @@ export default function CommandPalette({ notes, onSelect, onClose }: CommandPale
 
   const filtered = useMemo<PaletteItem[]>(() => {
     const q = query.trim();
+    const pluginCommands = pluginSystem.getCommandRegistry().getAll();
     const cmdItems: PaletteItem[] = pluginCommands
       .filter((c) => !q || fuzzyMatch(q, c.title))
       .map((c) => ({ type: "command" as const, command: c }));
-
     const noteItems: PaletteItem[] = notes
       .filter((n) => !q || fuzzyMatch(q, n.replace(/\.md$/, "")))
       .map((n) => ({ type: "note" as const, value: n }));
-
-    if (!q) return [...cmdItems, ...noteItems];
-
-    const matchedCmds = cmdItems.filter((i) => i.type === "command" && fuzzyMatch(q, i.command.title));
-    const matchedNotes = noteItems.filter((i) => i.type === "note" && fuzzyMatch(q, i.value.replace(/\.md$/, "")));
-    return [...matchedCmds, ...matchedNotes];
-  }, [notes, query, pluginCommands]);
+    return [...cmdItems, ...noteItems];
+  }, [notes, query]);
 
   useEffect(() => {
     inputRef.current?.focus();

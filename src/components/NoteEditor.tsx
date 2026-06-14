@@ -103,6 +103,8 @@ export default function NoteEditor({ content, onChange, noteNames, vimMode }: No
     [noteNames]
   );
 
+  const pluginExtensions = pluginSystem.getAllEditorExtensions();
+
   const extensions = useMemo(() => {
     const exts = [
       lineNumbers(),
@@ -116,17 +118,21 @@ export default function NoteEditor({ content, onChange, noteNames, vimMode }: No
       brutalTheme,
       EditorView.lineWrapping,
       wikiCompletion,
-      ...pluginSystem.getAllEditorExtensions(),
+      ...pluginExtensions,
     ];
     if (vimMode) {
       exts.unshift(vim());
     }
     return exts;
-  }, [wikiCompletion, vimMode]);
+  }, [wikiCompletion, vimMode, pluginExtensions.length]);
 
   const handleChange = useCallback((value: string) => {
     onChange(value);
   }, [onChange]);
+
+  const handleCreateEditor = useCallback((view: EditorView) => {
+    pluginSystem.setEditorView(view);
+  }, []);
 
   return (
     <CodeMirror
@@ -136,6 +142,7 @@ export default function NoteEditor({ content, onChange, noteNames, vimMode }: No
       theme="dark"
       height="100%"
       style={{ height: "100%" }}
+      onCreateEditor={handleCreateEditor}
     />
   );
 }

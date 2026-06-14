@@ -77,8 +77,3 @@ export async function unloadPlugins(): Promise<void> {
     pluginSystem.unregisterPlugin(plugin.manifest.id);
   }
 }
-
-export function getDynamicPluginManifests(): { name: string; enabled: boolean }[] {
-  const disabled = getDisabledPlugins();
-  return [];
-}

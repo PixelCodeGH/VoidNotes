@@ -661,7 +661,7 @@ html, body, #root {
   letter-spacing: 1.5px;
   margin-bottom: var(--space-md);
 }
-  font-size: var(--font-size-xs);
+
 /* ============================================================
    Resizable Panels
    ============================================================ */
@@ -1179,34 +1179,9 @@ html, body, #root {
 /* ============================================================
    Animations
    ============================================================ */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideInLeft {
-  from { transform: translateX(-20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideInRight {
-  from { transform: translateX(20px); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-@keyframes slideDown {
-  from { transform: translateY(-8px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-@keyframes scaleIn {
-  from { transform: scale(0.95) translateY(-8px); opacity: 0; }
-  to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 @keyframes pulse {
@@ -1309,8 +1284,7 @@ html, body, #root {
   align-items: center;
   gap: var(--space-sm);
 }
-  border-radius: 50%;
-  opacity: 0;
+
 /* --- Top bar left with traffic lights --- */
 .top-bar-left {
   display: flex;

@@ -326,19 +326,21 @@ function safePath(fileName: string): string | null {
   return resolved;
 }
 
-function scanDir(dir: string, prefix = ""): string[] {
+async function scanDir(dir: string, prefix = ""): Promise<string[]> {
   const results: string[] = [];
   try {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const entries = await fs.promises.readdir(dir, { withFileTypes: true });
+    const subdirs: Promise<string[]>[] = [];
     for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
       const relPath = prefix ? `${prefix}/${entry.name}` : entry.name;
       if (entry.isDirectory()) {
-        results.push(...scanDir(fullPath, relPath));
+        subdirs.push(scanDir(path.join(dir, entry.name), relPath));
       } else if (entry.name.endsWith(".md")) {
         results.push(relPath);
       }
     }
+    const subResults = await Promise.all(subdirs);
+    for (const sub of subResults) results.push(...sub);
   } catch {}
   return results;
 }
@@ -353,8 +355,8 @@ ipcMain.handle("notes:list", async () => {
 ipcMain.handle("notes:load", async (_event, fileName: string) => {
   try {
     const filePath = safePath(fileName);
-    if (!filePath || !fs.existsSync(filePath)) return "";
-    return fs.readFileSync(filePath, "utf-8");
+    if (!filePath) return "";
+    return await fs.promises.readFile(filePath, "utf-8");
   } catch {
     return "";
   }
@@ -365,8 +367,8 @@ ipcMain.handle("notes:save", async (_event, fileName: string, content: string) =
     const filePath = safePath(fileName);
     if (!filePath) return false;
     const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    fs.writeFileSync(filePath, content, "utf-8");
+    await fs.promises.mkdir(dir, { recursive: true });
+    await fs.promises.writeFile(filePath, content, "utf-8");
     return true;
   } catch {
     return false;

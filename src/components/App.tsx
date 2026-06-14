@@ -14,7 +14,7 @@ import ResizablePanel from "./ResizablePanel";
 import { parseFrontmatter, buildBacklinks, buildTagIndex } from "../plugins/frontmatter";
 import { pluginSystem } from "../plugins/pluginSystem";
 import { loadPlugins } from "../plugins/pluginLoader";
-import { checkForUpdate, UpdateInfo, APP_VERSION } from "../plugins/updater";
+import { checkForUpdate, UpdateInfo } from "../plugins/updater";
 
 const THEME_BG: Record<ThemeName, string> = {
   obsidian: "#1e1e1e",
@@ -24,21 +24,15 @@ const THEME_BG: Record<ThemeName, string> = {
   solarized: "#002b36",
 };
 
-let saveTimeout: ReturnType<typeof setTimeout> | null = null;
-
 export default function App() {
   const [vaultReady, setVaultReady] = useState(false);
   const [notes, setNotes] = useState<string[]>([]);
   const [activeNote, setActiveNote] = useState<string | null>(null);
   const [rawContent, setRawContent] = useState("");
   const [previewMode, setPreviewMode] = useState(false);
-  const [splitView, setSplitView] = useState(() => {
-    return localStorage.getItem("void-split-view") === "true";
-  });
+  const [splitView, setSplitView] = useState(() => localStorage.getItem("void-split-view") === "true");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [vimMode, setVimMode] = useState(() => {
-    return localStorage.getItem("void-vim-mode") === "true";
-  });
+  const [vimMode, setVimMode] = useState(() => localStorage.getItem("void-vim-mode") === "true");
   const tagIndex = useRef<Map<string, string[]>>(new Map());
   const [backlinks, setBacklinks] = useState<Map<string, string[]>>(new Map());
   const [showSearch, setShowSearch] = useState(false);
@@ -52,17 +46,28 @@ export default function App() {
   const [renamingFile, setRenamingFile] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
   const [theme, setTheme] = useState<ThemeName>(() => {
-    const stored = localStorage.getItem("void-notes-theme");
-    return (stored as ThemeName) || "obsidian";
+    return (localStorage.getItem("void-notes-theme") as ThemeName) || "obsidian";
   });
   const allContents = useRef<Map<string, string>>(new Map());
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // --- Refs for stable plugin API closures ---
+  const activeNoteRef = useRef(activeNote);
+  const rawContentRef = useRef(rawContent);
+  const notesRef = useRef(notes);
+  const vaultPathRef = useRef(vaultPath);
+  useEffect(() => { activeNoteRef.current = activeNote; }, [activeNote]);
+  useEffect(() => { rawContentRef.current = rawContent; }, [rawContent]);
+  useEffect(() => { notesRef.current = notes; }, [notes]);
+  useEffect(() => { vaultPathRef.current = vaultPath; }, [vaultPath]);
+
+  // --- Plugin API setup (runs once) ---
   useEffect(() => {
     pluginSystem.setNoteAPI({
-      getActive: () => activeNote,
-      getContent: () => rawContent,
+      getActive: () => activeNoteRef.current,
+      getContent: () => rawContentRef.current,
       setContent: (c: string) => { setRawContent(c); setSaved(false); },
-      getAllNotes: () => notes,
+      getAllNotes: () => notesRef.current,
       load: (f: string) => window.electronAPI.loadNote(f),
       save: (f: string, c: string) => window.electronAPI.saveNote(f, c),
       create: (n?: string) => window.electronAPI.createNote(n),
@@ -70,10 +75,10 @@ export default function App() {
       rename: (o: string, n: string) => window.electronAPI.renameNote(o, n),
     });
     pluginSystem.setVaultAPI({
-      getPath: () => vaultPath,
+      getPath: () => vaultPathRef.current,
       select: () => window.electronAPI.selectVault(),
     });
-  }, [activeNote, rawContent, notes, vaultPath]);
+  }, []);
 
   const handleVaultSelect = useCallback(async (p: string) => {
     await window.electronAPI.setVault(p);
@@ -103,11 +108,13 @@ export default function App() {
   }, []);
 
   const refreshBacklinks = useCallback(async (files: string[]) => {
-    const contents = new Map<string, string>();
-    for (const file of files) {
-      const content = await window.electronAPI.loadNote(file);
-      contents.set(file, content);
-    }
+    const entries = await Promise.all(
+      files.map(async (file) => {
+        const content = await window.electronAPI.loadNote(file);
+        return [file, content] as const;
+      })
+    );
+    const contents = new Map<string, string>(entries);
     allContents.current = contents;
     setBacklinks(buildBacklinks(contents));
     tagIndex.current = buildTagIndex(contents);
@@ -128,6 +135,11 @@ export default function App() {
       })
     );
   }, [notes, selectedTags]);
+
+  const sortedTags = useMemo(
+    () => Array.from(tagIndex.current.keys()).sort(),
+    [backlinks]
+  );
 
   const openNote = useCallback(async (fileName: string) => {
     setActiveNote(fileName);
@@ -184,9 +196,7 @@ export default function App() {
     if (!renamingFile || !renameValue.trim()) return;
     const result = await window.electronAPI.renameNote(renamingFile, renameValue.trim());
     if (!result) return;
-    if (activeNote === renamingFile) {
-      setActiveNote(result);
-    }
+    if (activeNote === renamingFile) setActiveNote(result);
     setRenamingFile(null);
     setRenameValue("");
     const files = await refreshNotes();
@@ -197,34 +207,40 @@ export default function App() {
     setRawContent(value);
     setSaved(false);
     if (!activeNote) return;
-    if (saveTimeout) clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(async () => {
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(async () => {
       const finalContent = pluginSystem.callNoteSave(activeNote, value);
       await window.electronAPI.saveNote(activeNote, finalContent);
       setSaved(true);
-      const files = await window.electronAPI.listNotes();
-      refreshBacklinks(files);
+      allContents.current.set(activeNote, value);
+      setBacklinks(buildBacklinks(allContents.current));
+      tagIndex.current = buildTagIndex(allContents.current);
     }, 500);
-  }, [activeNote, refreshBacklinks]);
+  }, [activeNote]);
+
+  const handleManualSaveRef = useRef<() => void>(() => {});
+  const handleNewNoteRef = useRef<() => void>(() => {});
 
   const handleManualSave = useCallback(async () => {
     if (!activeNote) return;
-    if (saveTimeout) clearTimeout(saveTimeout);
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     const finalContent = pluginSystem.callNoteSave(activeNote, rawContent);
     await window.electronAPI.saveNote(activeNote, finalContent);
     setSaved(true);
+    allContents.current.set(activeNote, rawContent);
+    setBacklinks(buildBacklinks(allContents.current));
+    tagIndex.current = buildTagIndex(allContents.current);
   }, [activeNote, rawContent]);
+
+  useEffect(() => { handleManualSaveRef.current = handleManualSave; }, [handleManualSave]);
+  useEffect(() => { handleNewNoteRef.current = handleNewNote; }, [handleNewNote]);
 
   const handleWikiLinkClick = useCallback(async (target: string) => {
     const fileName = target.endsWith(".md") ? target : `${target}.md`;
-    if (notes.includes(fileName)) {
-      await openNote(fileName);
-    }
+    if (notes.includes(fileName)) await openNote(fileName);
   }, [notes, openNote]);
 
-  const togglePreview = useCallback(() => {
-    setPreviewMode((prev) => !prev);
-  }, []);
+  const togglePreview = useCallback(() => setPreviewMode((prev) => !prev), []);
 
   const toggleSplitView = useCallback(() => {
     setSplitView((prev) => {
@@ -246,6 +262,9 @@ export default function App() {
     }
   }, [refreshNotes, refreshBacklinks, openNote]);
 
+  const handleDailyNoteRef = useRef(handleDailyNote);
+  useEffect(() => { handleDailyNoteRef.current = handleDailyNote; }, [handleDailyNote]);
+
   useEffect(() => {
     if (!vaultReady) return;
     loadPlugins().then(() => {
@@ -260,43 +279,37 @@ export default function App() {
     const now = Date.now();
     if (!lastCheck || now - Number(lastCheck) > 3600000) {
       localStorage.setItem("void-last-update-check", String(now));
-      checkForUpdate().then((info) => {
-        if (info) setUpdateInfo(info);
-      });
+      checkForUpdate().then((info) => { if (info) setUpdateInfo(info); });
     }
-  }, [vaultReady, refreshNotes, refreshBacklinks, openNote]);
+  }, [vaultReady]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "e") { e.preventDefault(); togglePreview(); }
       if (e.ctrlKey && e.shiftKey && e.key === "E") { e.preventDefault(); toggleSplitView(); }
       if (e.ctrlKey && e.key === "p") { e.preventDefault(); setShowSearch((v) => !v); }
-      if (e.ctrlKey && e.key === "s") { e.preventDefault(); handleManualSave(); }
-      if (e.ctrlKey && e.key === "n") { e.preventDefault(); handleNewNote(); }
-      if (e.ctrlKey && e.shiftKey && e.key === "N") { e.preventDefault(); handleDailyNote(); }
+      if (e.ctrlKey && e.key === "s") { e.preventDefault(); handleManualSaveRef.current(); }
+      if (e.ctrlKey && e.key === "n") { e.preventDefault(); handleNewNoteRef.current(); }
+      if (e.ctrlKey && e.shiftKey && e.key === "N") { e.preventDefault(); handleDailyNoteRef.current(); }
       if (e.ctrlKey && e.key === ",") { e.preventDefault(); setShowSettings((v) => !v); }
       if (e.key === "F1") { e.preventDefault(); setShowHelp((v) => !v); }
       if (e.key === "F9") { e.preventDefault(); setFocusMode((v) => !v); }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
-  }, [togglePreview, toggleSplitView, handleManualSave, handleNewNote]);
+  }, [togglePreview, toggleSplitView]);
 
   if (!vaultReady) {
     return <VaultSetup onVaultSelect={handleVaultSelect} />;
   }
 
-  const { data: frontmatter } = parseFrontmatter(rawContent);
+  const { data: frontmatter } = useMemo(() => parseFrontmatter(rawContent), [rawContent]);
   const noteBacklinks = activeNote ? (backlinks.get(activeNote) || []) : [];
 
   return (
     <div className="app">
       {focusMode ? (
-        <button
-          className="focus-restore-btn"
-          onClick={() => setFocusMode(false)}
-          title="Show sidebar (F9)"
-        >
+        <button className="focus-restore-btn" onClick={() => setFocusMode(false)} title="Show sidebar (F9)">
           &#9776;
         </button>
       ) : (
@@ -307,7 +320,7 @@ export default function App() {
             activeNote={activeNote}
             focusMode={focusMode}
             vaultPath={vaultPath}
-            tags={Array.from(tagIndex.current.keys()).sort()}
+            tags={sortedTags}
             selectedTags={selectedTags}
             onToggleTag={toggleTag}
             onToggleFocusMode={() => setFocusMode((v) => !v)}
@@ -379,36 +392,14 @@ export default function App() {
       </div>
 
       {showSearch && (
-        <CommandPalette
-          notes={notes}
-          onSelect={(file) => { setShowSearch(false); openNote(file); }}
-          onClose={() => setShowSearch(false)}
-        />
+        <CommandPalette notes={notes} onSelect={(file) => { setShowSearch(false); openNote(file); }} onClose={() => setShowSearch(false)} />
       )}
-
       {showSettings && (
-        <Settings
-          onClose={() => setShowSettings(false)}
-          onSwitchVault={handleSwitchVault}
-          theme={theme}
-          onThemeChange={setTheme}
-          vaultPath={vaultPath}
-          vimMode={vimMode}
-          onVimModeChange={(v) => { setVimMode(v); localStorage.setItem("void-vim-mode", String(v)); }}
-        />
+        <Settings onClose={() => setShowSettings(false)} onSwitchVault={handleSwitchVault} theme={theme} onThemeChange={setTheme} vaultPath={vaultPath} vimMode={vimMode} onVimModeChange={(v) => { setVimMode(v); localStorage.setItem("void-vim-mode", String(v)); }} />
       )}
-
-      {showHelp && (
-        <Help onClose={() => setShowHelp(false)} />
-      )}
-
-      {showPlugins && (
-        <PluginsModal onClose={() => setShowPlugins(false)} />
-      )}
-
-      {updateInfo && (
-        <UpdateModal info={updateInfo} onClose={() => setUpdateInfo(null)} />
-      )}
+      {showHelp && <Help onClose={() => setShowHelp(false)} />}
+      {showPlugins && <PluginsModal onClose={() => setShowPlugins(false)} />}
+      {updateInfo && <UpdateModal info={updateInfo} onClose={() => setUpdateInfo(null)} />}
 
       {renamingFile && (
         <div className="modal-overlay" onClick={() => setRenamingFile(null)}>
@@ -418,13 +409,7 @@ export default function App() {
               <button className="btn-icon" onClick={() => setRenamingFile(null)}>&times;</button>
             </div>
             <div className="modal-body">
-              <input
-                className="rename-input"
-                value={renameValue}
-                onChange={(e) => setRenameValue(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter") confirmRename(); if (e.key === "Escape") setRenamingFile(null); }}
-                autoFocus
-              />
+              <input className="rename-input" value={renameValue} onChange={(e) => setRenameValue(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") confirmRename(); if (e.key === "Escape") setRenamingFile(null); }} autoFocus />
               <div style={{ display: "flex", gap: "var(--space-sm)", marginTop: "var(--space-md)" }}>
                 <button className="btn-secondary" onClick={() => setRenamingFile(null)}>Cancel</button>
                 <button className="btn-secondary" style={{ background: "var(--accent)", color: "#fff", border: "none" }} onClick={confirmRename}>Rename</button>

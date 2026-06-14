@@ -258,11 +258,17 @@ export class PluginSystem {
   }
 
   async callAppReady(): Promise<void> {
+    const tasks: Promise<void>[] = [];
     for (const p of this.plugins.values()) {
       if (p.onAppReady) {
-        try { await p.onAppReady(this.api); } catch (e) { console.error(`Plugin "${p.manifest.id}" onAppReady error:`, e); }
+        tasks.push(
+          Promise.resolve()
+            .then(() => p.onAppReady!(this.api))
+            .catch((e) => console.error(`Plugin "${p.manifest.id}" onAppReady error:`, e))
+        );
       }
     }
+    await Promise.allSettled(tasks);
     this.eventBus.emit("app-ready");
   }
 
