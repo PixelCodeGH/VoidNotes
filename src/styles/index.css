@@ -1676,6 +1676,35 @@ html, body, #root {
 }
 
 /* ============================================================
+   Shortcuts
+   ============================================================ */
+.shortcuts-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xs) 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg-active);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+/* ============================================================
    Theme selector
    ============================================================ */
 .theme-grid {
@@ -1885,8 +1914,7 @@ html, body, #root {
 .cm-content,
 .cm-gutters,
 pre,
-code,
-kbd {
+code {
   transition: none;
 }
 
