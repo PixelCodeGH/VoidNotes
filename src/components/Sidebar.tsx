@@ -18,7 +18,6 @@ interface SidebarProps {
   onDelete: (fileName: string) => void;
   onRename: (oldName: string) => void;
   onOpenSearch: () => void;
-  onOpenPlugins?: () => void;
   onOpenSettings: () => void;
   onOpenHelp: () => void;
 }
@@ -117,7 +116,7 @@ function FolderView({ node, activeNote, onSelect, onDelete, onContextMenu, depth
   );
 }
 
-export default function Sidebar({ notes, allNotes, activeNote, focusMode, vaultPath, tags, selectedTags, onToggleTag, onToggleFocusMode, onSelect, onNew, onDelete, onRename, onOpenSearch, onOpenPlugins, onOpenSettings, onOpenHelp }: SidebarProps) {
+export default function Sidebar({ notes, allNotes, activeNote, focusMode, vaultPath, tags, selectedTags, onToggleTag, onToggleFocusMode, onSelect, onNew, onDelete, onRename, onOpenSearch, onOpenSettings, onOpenHelp }: SidebarProps) {
   const tree = useMemo(() => buildTree(notes), [notes]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; file: string } | null>(null);
 
@@ -174,9 +173,6 @@ export default function Sidebar({ notes, allNotes, activeNote, focusMode, vaultP
       )}
 
       <div className="sidebar-footer">
-        {onOpenPlugins && (
-          <button className="sidebar-footer-btn" onClick={onOpenPlugins}>&#128268; Plugins</button>
-        )}
         <button className="sidebar-footer-btn" onClick={onOpenSettings}>&#9881; Settings</button>
         <button className="sidebar-footer-btn" onClick={onOpenHelp}>&#9432; Help</button>
       </div>

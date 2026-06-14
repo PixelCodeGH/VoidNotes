@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import { getAllPluginManifests, setPluginEnabled } from "../plugins/pluginLoader";
 import { APP_VERSION } from "../plugins/updater";
-import { AppMode } from "./ModeSelection";
 
 export type ThemeName = "obsidian" | "light" | "dracula" | "nord" | "solarized";
 
@@ -21,16 +19,9 @@ interface SettingsProps {
   vaultPath: string | null;
   vimMode: boolean;
   onVimModeChange: (v: boolean) => void;
-  mode: AppMode;
 }
 
-export default function Settings({ onClose, onSwitchVault, theme, onThemeChange, vaultPath, vimMode, onVimModeChange, mode }: SettingsProps) {
-  const [pluginStates, setPluginStates] = useState(() => getAllPluginManifests());
-
-  const handleTogglePlugin = (id: string, enabled: boolean) => {
-    setPluginEnabled(id, enabled);
-    setPluginStates(getAllPluginManifests());
-  };
+export default function Settings({ onClose, onSwitchVault, theme, onThemeChange, vaultPath, vimMode, onVimModeChange }: SettingsProps) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -86,34 +77,6 @@ export default function Settings({ onClose, onSwitchVault, theme, onThemeChange,
             <p className="settings-hint">Use Vim-style modal editing (Normal, Insert, Visual modes).</p>
           </div>
 
-          {mode === "expanded" && (
-            <div className="settings-section">
-              <div className="settings-label">Plugins</div>
-              <p className="settings-hint">Enable or disable plugins. Changes take effect after restart.</p>
-              <div className="plugins-list">
-                {pluginStates.map(({ plugin, enabled }) => (
-                  <div key={plugin.manifest.id} className="plugin-item">
-                    <div className="plugin-info">
-                      <span className="plugin-name">{plugin.manifest.name}</span>
-                      <span className="plugin-version">v{plugin.manifest.version}</span>
-                      {plugin.manifest.description && (
-                        <span className="plugin-desc">{plugin.manifest.description}</span>
-                      )}
-                    </div>
-                    <button
-                      className={`toggle-btn ${enabled ? "active" : ""}`}
-                      onClick={() => handleTogglePlugin(plugin.manifest.id, !enabled)}
-                    >
-                      <div className="toggle-knob" />
-                    </button>
-                  </div>
-                ))}
-                {pluginStates.length === 0 && (
-                  <p className="settings-hint">No plugins installed.</p>
-                )}
-              </div>
-            </div>
-          )}
 
           <div className="settings-section">
             <div className="settings-label">Keyboard Shortcuts</div>

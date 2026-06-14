@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-export type AppMode = "minimalistic" | "expanded";
+export type AppMode = "minimalistic";
 
 interface ModeSelectionProps {
   onSelect: (mode: AppMode) => void;
@@ -18,19 +18,6 @@ const MODES: { id: AppMode; label: string; desc: string[]; icon: string }[] = [
       "Tags, callouts, frontmatter",
       "Themes and Vim keybindings",
       "Auto-save, focus mode, keyboard shortcuts",
-    ],
-  },
-  {
-    id: "expanded",
-    label: "Expanded",
-    icon: "\u{1F9E9}",
-    desc: [
-      "Everything in Minimalistic, plus:",
-      "Plugin System with full API",
-      "Plugin Marketplace (browse & install)",
-      "Command Palette with plugin commands",
-      "Auto-Updater for new releases",
-      "Extensible via JavaScript plugins",
     ],
   },
 ];

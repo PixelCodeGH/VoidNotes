@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
-import { pluginSystem } from "../plugins/pluginSystem";
-import { CommandEntry } from "../plugins/pluginInterface";
 
 interface CommandPaletteProps {
   notes: string[];
@@ -8,9 +6,7 @@ interface CommandPaletteProps {
   onClose: () => void;
 }
 
-type PaletteItem =
-  | { type: "note"; value: string }
-  | { type: "command"; command: CommandEntry };
+type PaletteItem = { type: "note"; value: string };
 
 function fuzzyMatch(query: string, text: string): boolean {
   const q = query.toLowerCase();
@@ -27,18 +23,12 @@ export default function CommandPalette({ notes, onSelect, onClose }: CommandPale
   const [selected, setSelected] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const api = pluginSystem.getAPI();
-
   const filtered = useMemo<PaletteItem[]>(() => {
     const q = query.trim();
-    const pluginCommands = pluginSystem.getCommandRegistry().getAll();
-    const cmdItems: PaletteItem[] = pluginCommands
-      .filter((c) => !q || fuzzyMatch(q, c.title))
-      .map((c) => ({ type: "command" as const, command: c }));
     const noteItems: PaletteItem[] = notes
       .filter((n) => !q || fuzzyMatch(q, n.replace(/\.md$/, "")))
       .map((n) => ({ type: "note" as const, value: n }));
-    return [...cmdItems, ...noteItems];
+    return noteItems;
   }, [notes, query]);
 
   useEffect(() => {
@@ -60,22 +50,12 @@ export default function CommandPalette({ notes, onSelect, onClose }: CommandPale
       setSelected((prev) => Math.max(prev - 1, 0));
     } else if (e.key === "Enter" && filtered.length > 0) {
       const item = filtered[selected];
-      if (item.type === "command") {
-        item.command.action(api);
-        onClose();
-      } else {
-        onSelect(item.value);
-      }
+      onSelect(item.value);
     }
   };
 
   const handleClick = (item: PaletteItem) => {
-    if (item.type === "command") {
-      item.command.action(api);
-      onClose();
-    } else {
-      onSelect(item.value);
-    }
+    onSelect(item.value);
   };
 
   return (
@@ -84,7 +64,7 @@ export default function CommandPalette({ notes, onSelect, onClose }: CommandPale
         <input
           ref={inputRef}
           className="command-palette-input"
-          placeholder="Search notes or commands..."
+          placeholder="Search notes..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -97,26 +77,19 @@ export default function CommandPalette({ notes, onSelect, onClose }: CommandPale
           )}
           {filtered.map((item, i) => (
             <div
-              key={item.type === "command" ? `cmd-${item.command.id}` : `note-${item.value}`}
+              key={`note-${item.value}`}
               className={`command-palette-item ${i === selected ? "selected" : ""}`}
               onClick={() => handleClick(item)}
               onMouseEnter={() => setSelected(i)}
             >
-              <span className="command-palette-item-icon">
-                {item.type === "command" ? (item.command.icon || "\u{2699}\u{FE0F}") : "\u{1F4C4}"}
-              </span>
+              <span className="command-palette-item-icon">📄</span>
               <span className="command-palette-item-name">
-                {item.type === "command"
-                  ? item.command.title
-                  : item.value.split("/").pop()?.replace(/\.md$/, "") || item.value}
+                {item.value.split("/").pop()?.replace(/\.md$/, "") || item.value}
               </span>
-              {item.type === "note" && item.value.includes("/") && (
+              {item.value.includes("/") && (
                 <span className="command-palette-item-path">
                   {item.value.substring(0, item.value.lastIndexOf("/"))}
                 </span>
-              )}
-              {item.type === "command" && item.command.category && (
-                <span className="command-palette-item-path">{item.command.category}</span>
               )}
             </div>
           ))}

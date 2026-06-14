@@ -431,7 +431,66 @@ ipcMain.handle("notes:stat", async (_event, fileName: string) => {
   }
 });
 
+// --- Plugins ---
 
+function getPluginsDir(): string | null {
+  if (!vaultPath) return null;
+  const dir = path.join(vaultPath, ".plugins");
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
+ipcMain.handle("plugins:list", async () => {
+  try {
+    const dir = getPluginsDir();
+    if (!dir) return [];
+    return fs.readdirSync(dir)
+      .filter((f) => f.endsWith(".js") || f.endsWith(".ts"))
+      .map((f) => f.replace(/\.(js|ts)$/, ""));
+  } catch {
+    return [];
+  }
+});
+
+ipcMain.handle("plugins:load", async (_event, name: string) => {
+  try {
+    const dir = getPluginsDir();
+    if (!dir) return "";
+    const jsPath = path.join(dir, `${name}.js`);
+    const tsPath = path.join(dir, `${name}.ts`);
+    const filePath = fs.existsSync(jsPath) ? jsPath : fs.existsSync(tsPath) ? tsPath : null;
+    if (!filePath) return "";
+    return fs.readFileSync(filePath, "utf-8");
+  } catch {
+    return "";
+  }
+});
+
+ipcMain.handle("plugins:save-file", async (_event, name: string, content: string) => {
+  try {
+    const dir = getPluginsDir();
+    if (!dir) return false;
+    fs.writeFileSync(path.join(dir, `${name}.js`), content, "utf-8");
+    return true;
+  } catch {
+    return false;
+  }
+});
+
+ipcMain.handle("plugins:delete-file", async (_event, name: string) => {
+  try {
+    const dir = getPluginsDir();
+    if (!dir) return false;
+    const jsPath = path.join(dir, `${name}.js`);
+    const tsPath = path.join(dir, `${name}.ts`);
+    const filePath = fs.existsSync(jsPath) ? jsPath : fs.existsSync(tsPath) ? tsPath : null;
+    if (!filePath) return false;
+    await fs.promises.unlink(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+});
 
 app.whenReady().then(() => {
   loadConfig();

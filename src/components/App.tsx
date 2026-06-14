@@ -9,13 +9,8 @@ import StatusBar from "./StatusBar";
 import TrafficLights from "./TrafficLights";
 import Settings, { ThemeName } from "./Settings";
 import Help from "./Help";
-import PluginsModal from "./PluginsModal";
-import UpdateModal from "./UpdateModal";
 import ResizablePanel from "./ResizablePanel";
 import { parseFrontmatter, buildBacklinks, buildTagIndex } from "../plugins/frontmatter";
-import { pluginSystem } from "../plugins/pluginSystem";
-import { loadPlugins } from "../plugins/pluginLoader";
-import { checkForUpdate, UpdateInfo } from "../plugins/updater";
 
 const THEME_BG: Record<ThemeName, string> = {
   obsidian: "#1e1e1e",
@@ -26,9 +21,7 @@ const THEME_BG: Record<ThemeName, string> = {
 };
 
 export default function App() {
-  const [mode, setMode] = useState<AppMode | null>(() => {
-    return (localStorage.getItem("void-app-mode") as AppMode) || null;
-  });
+  const [mode] = useState<AppMode>("minimalistic");
   const [vaultReady, setVaultReady] = useState(false);
   const [notes, setNotes] = useState<string[]>([]);
   const [activeNote, setActiveNote] = useState<string | null>(null);
@@ -42,8 +35,6 @@ export default function App() {
   const [showSearch, setShowSearch] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
-  const [showPlugins, setShowPlugins] = useState(false);
-  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
   const [saved, setSaved] = useState(true);
   const [focusMode, setFocusMode] = useState(false);
   const [vaultPath, setVaultPath] = useState<string | null>(null);
@@ -55,7 +46,7 @@ export default function App() {
   const allContents = useRef<Map<string, string>>(new Map());
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // --- Refs for stable plugin API closures ---
+  // --- Refs for stable closures ---
   const activeNoteRef = useRef(activeNote);
   const rawContentRef = useRef(rawContent);
   const notesRef = useRef(notes);
@@ -64,25 +55,6 @@ export default function App() {
   useEffect(() => { rawContentRef.current = rawContent; }, [rawContent]);
   useEffect(() => { notesRef.current = notes; }, [notes]);
   useEffect(() => { vaultPathRef.current = vaultPath; }, [vaultPath]);
-
-  // --- Plugin API setup (runs once) ---
-  useEffect(() => {
-    pluginSystem.setNoteAPI({
-      getActive: () => activeNoteRef.current,
-      getContent: () => rawContentRef.current,
-      setContent: (c: string) => { setRawContent(c); setSaved(false); },
-      getAllNotes: () => notesRef.current,
-      load: (f: string) => window.electronAPI.loadNote(f),
-      save: (f: string, c: string) => window.electronAPI.saveNote(f, c),
-      create: (n?: string) => window.electronAPI.createNote(n),
-      delete: (f: string) => window.electronAPI.deleteNote(f),
-      rename: (o: string, n: string) => window.electronAPI.renameNote(o, n),
-    });
-    pluginSystem.setVaultAPI({
-      getPath: () => vaultPathRef.current,
-      select: () => window.electronAPI.selectVault(),
-    });
-  }, []);
 
   const handleVaultSelect = useCallback(async (p: string) => {
     await window.electronAPI.setVault(p);
@@ -151,7 +123,6 @@ export default function App() {
     setRawContent(content);
     setPreviewMode(false);
     setSaved(true);
-    pluginSystem.callNoteLoad(fileName);
   }, []);
 
   const handleNewNote = useCallback(async () => {
@@ -213,8 +184,7 @@ export default function App() {
     if (!activeNote) return;
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     saveTimeoutRef.current = setTimeout(async () => {
-      const finalContent = pluginSystem.callNoteSave(activeNote, value);
-      await window.electronAPI.saveNote(activeNote, finalContent);
+      await window.electronAPI.saveNote(activeNote, value);
       setSaved(true);
       allContents.current.set(activeNote, value);
       setBacklinks(buildBacklinks(allContents.current));
@@ -228,8 +198,7 @@ export default function App() {
   const handleManualSave = useCallback(async () => {
     if (!activeNote) return;
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-    const finalContent = pluginSystem.callNoteSave(activeNote, rawContent);
-    await window.electronAPI.saveNote(activeNote, finalContent);
+    await window.electronAPI.saveNote(activeNote, rawContent);
     setSaved(true);
     allContents.current.set(activeNote, rawContent);
     setBacklinks(buildBacklinks(allContents.current));
@@ -271,29 +240,10 @@ export default function App() {
 
   useEffect(() => {
     if (!vaultReady) return;
-    if (mode === "expanded") {
-      loadPlugins().then(() => {
-        refreshNotes().then((files) => {
-          refreshBacklinks(files);
-          if (files.length > 0) openNote(files[0]);
-          pluginSystem.callAppReady();
-        });
-      });
-    } else {
-      refreshNotes().then((files) => {
-        refreshBacklinks(files);
-        if (files.length > 0) openNote(files[0]);
-      });
-    }
-
-    if (mode === "expanded") {
-      const lastCheck = localStorage.getItem("void-last-update-check");
-      const now = Date.now();
-      if (!lastCheck || now - Number(lastCheck) > 3600000) {
-        localStorage.setItem("void-last-update-check", String(now));
-        checkForUpdate().then((info) => { if (info) setUpdateInfo(info); });
-      }
-    }
+    refreshNotes().then((files) => {
+      refreshBacklinks(files);
+      if (files.length > 0) openNote(files[0]);
+    });
   }, [vaultReady, mode]);
 
   useEffect(() => {
@@ -313,15 +263,6 @@ export default function App() {
   }, [togglePreview, toggleSplitView]);
 
   const noteBacklinks = activeNote ? (backlinks.get(activeNote) || []) : [];
-
-  const handleModeSelect = useCallback((selectedMode: AppMode) => {
-    localStorage.setItem("void-app-mode", selectedMode);
-    setMode(selectedMode);
-  }, []);
-
-  if (!mode) {
-    return <ModeSelection onSelect={handleModeSelect} />;
-  }
 
   if (!vaultReady) {
     return <VaultSetup onVaultSelect={handleVaultSelect} />;
@@ -350,7 +291,6 @@ export default function App() {
             onDelete={handleDeleteNote}
             onRename={handleRenameNote}
             onOpenSearch={() => setShowSearch(true)}
-            onOpenPlugins={mode === "expanded" ? () => setShowPlugins(true) : undefined}
             onOpenSettings={() => setShowSettings(true)}
             onOpenHelp={() => setShowHelp(true)}
           />
@@ -416,11 +356,9 @@ export default function App() {
         <CommandPalette notes={notes} onSelect={(file) => { setShowSearch(false); openNote(file); }} onClose={() => setShowSearch(false)} />
       )}
       {showSettings && (
-        <Settings onClose={() => setShowSettings(false)} onSwitchVault={handleSwitchVault} theme={theme} onThemeChange={setTheme} vaultPath={vaultPath} vimMode={vimMode} onVimModeChange={(v) => { setVimMode(v); localStorage.setItem("void-vim-mode", String(v)); }} mode={mode} />
+        <Settings onClose={() => setShowSettings(false)} onSwitchVault={handleSwitchVault} theme={theme} onThemeChange={setTheme} vaultPath={vaultPath} vimMode={vimMode} onVimModeChange={(v) => { setVimMode(v); localStorage.setItem("void-vim-mode", String(v)); }} />
       )}
       {showHelp && <Help onClose={() => setShowHelp(false)} />}
-      {showPlugins && mode === "expanded" && <PluginsModal onClose={() => setShowPlugins(false)} />}
-      {updateInfo && mode === "expanded" && <UpdateModal info={updateInfo} onClose={() => setUpdateInfo(null)} />}
 
       {renamingFile && (
         <div className="modal-overlay" onClick={() => setRenamingFile(null)}>

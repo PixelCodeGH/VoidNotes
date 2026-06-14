@@ -987,10 +987,11 @@ html, body, #root {
 }
 
 .mode-card-list li::before {
-  content: "\u2022";
+  content: "\u2192";
   position: absolute;
   left: 0;
-  color: var(--text-muted);
+  color: var(--accent);
+  font-size: 12px;
 }
 
 .mode-confirm-btn {
