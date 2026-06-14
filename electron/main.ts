@@ -481,9 +481,11 @@ ipcMain.handle("plugins:delete-file", async (_event, name: string) => {
   try {
     const dir = getPluginsDir();
     if (!dir) return false;
-    const filePath = path.join(dir, `${name}.js`);
-    if (!fs.existsSync(filePath)) return false;
-    fs.unlinkSync(filePath);
+    const jsPath = path.join(dir, `${name}.js`);
+    const tsPath = path.join(dir, `${name}.ts`);
+    const filePath = fs.existsSync(jsPath) ? jsPath : fs.existsSync(tsPath) ? tsPath : null;
+    if (!filePath) return false;
+    await fs.promises.unlink(filePath);
     return true;
   } catch {
     return false;

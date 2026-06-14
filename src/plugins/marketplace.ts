@@ -33,10 +33,6 @@ function saveInstalled(installed: Map<string, InstalledPlugin>): void {
   localStorage.setItem("void-installed-plugins", JSON.stringify(Array.from(installed.values())));
 }
 
-export function getInstalledPlugins(): InstalledPlugin[] {
-  return Array.from(getInstalled().values());
-}
-
 export function isInstalled(id: string): boolean {
   return getInstalled().has(id);
 }

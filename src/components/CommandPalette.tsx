@@ -27,7 +27,6 @@ export default function CommandPalette({ notes, onSelect, onClose }: CommandPale
   const [selected, setSelected] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const pluginCommands = pluginSystem.getCommandRegistry().getAll();
   const api = pluginSystem.getAPI();
 
   const filtered = useMemo<PaletteItem[]>(() => {

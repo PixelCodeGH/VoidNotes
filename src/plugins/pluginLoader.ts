@@ -72,8 +72,3 @@ export async function loadPlugins(): Promise<void> {
   } catch {}
 }
 
-export async function unloadPlugins(): Promise<void> {
-  for (const plugin of pluginSystem.getAllPlugins()) {
-    pluginSystem.unregisterPlugin(plugin.manifest.id);
-  }
-}

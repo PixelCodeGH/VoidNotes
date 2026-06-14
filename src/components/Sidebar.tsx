@@ -18,7 +18,7 @@ interface SidebarProps {
   onDelete: (fileName: string) => void;
   onRename: (oldName: string) => void;
   onOpenSearch: () => void;
-  onOpenPlugins: () => void;
+  onOpenPlugins?: () => void;
   onOpenSettings: () => void;
   onOpenHelp: () => void;
 }
@@ -174,7 +174,9 @@ export default function Sidebar({ notes, allNotes, activeNote, focusMode, vaultP
       )}
 
       <div className="sidebar-footer">
-        <button className="sidebar-footer-btn" onClick={onOpenPlugins}>&#128268; Plugins</button>
+        {onOpenPlugins && (
+          <button className="sidebar-footer-btn" onClick={onOpenPlugins}>&#128268; Plugins</button>
+        )}
         <button className="sidebar-footer-btn" onClick={onOpenSettings}>&#9881; Settings</button>
         <button className="sidebar-footer-btn" onClick={onOpenHelp}>&#9432; Help</button>
       </div>

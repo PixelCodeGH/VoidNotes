@@ -4,6 +4,7 @@ import NoteEditor from "./NoteEditor";
 import NoteParser from "./NoteParser";
 import CommandPalette from "./CommandPalette";
 import VaultSetup from "./VaultSetup";
+import ModeSelection, { AppMode } from "./ModeSelection";
 import StatusBar from "./StatusBar";
 import TrafficLights from "./TrafficLights";
 import Settings, { ThemeName } from "./Settings";
@@ -25,6 +26,9 @@ const THEME_BG: Record<ThemeName, string> = {
 };
 
 export default function App() {
+  const [mode, setMode] = useState<AppMode | null>(() => {
+    return (localStorage.getItem("void-app-mode") as AppMode) || null;
+  });
   const [vaultReady, setVaultReady] = useState(false);
   const [notes, setNotes] = useState<string[]>([]);
   const [activeNote, setActiveNote] = useState<string | null>(null);
@@ -267,21 +271,30 @@ export default function App() {
 
   useEffect(() => {
     if (!vaultReady) return;
-    loadPlugins().then(() => {
+    if (mode === "expanded") {
+      loadPlugins().then(() => {
+        refreshNotes().then((files) => {
+          refreshBacklinks(files);
+          if (files.length > 0) openNote(files[0]);
+          pluginSystem.callAppReady();
+        });
+      });
+    } else {
       refreshNotes().then((files) => {
         refreshBacklinks(files);
         if (files.length > 0) openNote(files[0]);
-        pluginSystem.callAppReady();
       });
-    });
-
-    const lastCheck = localStorage.getItem("void-last-update-check");
-    const now = Date.now();
-    if (!lastCheck || now - Number(lastCheck) > 3600000) {
-      localStorage.setItem("void-last-update-check", String(now));
-      checkForUpdate().then((info) => { if (info) setUpdateInfo(info); });
     }
-  }, [vaultReady]);
+
+    if (mode === "expanded") {
+      const lastCheck = localStorage.getItem("void-last-update-check");
+      const now = Date.now();
+      if (!lastCheck || now - Number(lastCheck) > 3600000) {
+        localStorage.setItem("void-last-update-check", String(now));
+        checkForUpdate().then((info) => { if (info) setUpdateInfo(info); });
+      }
+    }
+  }, [vaultReady, mode]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -299,12 +312,20 @@ export default function App() {
     return () => document.removeEventListener("keydown", handler);
   }, [togglePreview, toggleSplitView]);
 
+  const noteBacklinks = activeNote ? (backlinks.get(activeNote) || []) : [];
+
+  const handleModeSelect = useCallback((selectedMode: AppMode) => {
+    localStorage.setItem("void-app-mode", selectedMode);
+    setMode(selectedMode);
+  }, []);
+
+  if (!mode) {
+    return <ModeSelection onSelect={handleModeSelect} />;
+  }
+
   if (!vaultReady) {
     return <VaultSetup onVaultSelect={handleVaultSelect} />;
   }
-
-  const { data: frontmatter } = useMemo(() => parseFrontmatter(rawContent), [rawContent]);
-  const noteBacklinks = activeNote ? (backlinks.get(activeNote) || []) : [];
 
   return (
     <div className="app">
@@ -329,7 +350,7 @@ export default function App() {
             onDelete={handleDeleteNote}
             onRename={handleRenameNote}
             onOpenSearch={() => setShowSearch(true)}
-            onOpenPlugins={() => setShowPlugins(true)}
+            onOpenPlugins={mode === "expanded" ? () => setShowPlugins(true) : undefined}
             onOpenSettings={() => setShowSettings(true)}
             onOpenHelp={() => setShowHelp(true)}
           />
@@ -395,11 +416,11 @@ export default function App() {
         <CommandPalette notes={notes} onSelect={(file) => { setShowSearch(false); openNote(file); }} onClose={() => setShowSearch(false)} />
       )}
       {showSettings && (
-        <Settings onClose={() => setShowSettings(false)} onSwitchVault={handleSwitchVault} theme={theme} onThemeChange={setTheme} vaultPath={vaultPath} vimMode={vimMode} onVimModeChange={(v) => { setVimMode(v); localStorage.setItem("void-vim-mode", String(v)); }} />
+        <Settings onClose={() => setShowSettings(false)} onSwitchVault={handleSwitchVault} theme={theme} onThemeChange={setTheme} vaultPath={vaultPath} vimMode={vimMode} onVimModeChange={(v) => { setVimMode(v); localStorage.setItem("void-vim-mode", String(v)); }} mode={mode} />
       )}
       {showHelp && <Help onClose={() => setShowHelp(false)} />}
-      {showPlugins && <PluginsModal onClose={() => setShowPlugins(false)} />}
-      {updateInfo && <UpdateModal info={updateInfo} onClose={() => setUpdateInfo(null)} />}
+      {showPlugins && mode === "expanded" && <PluginsModal onClose={() => setShowPlugins(false)} />}
+      {updateInfo && mode === "expanded" && <UpdateModal info={updateInfo} onClose={() => setUpdateInfo(null)} />}
 
       {renamingFile && (
         <div className="modal-overlay" onClick={() => setRenamingFile(null)}>
