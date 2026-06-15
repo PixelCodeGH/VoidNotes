@@ -15,6 +15,7 @@ import RightPanel from "./RightPanel";
 import GraphView from "./GraphView";
 import GlobalSearch from "./GlobalSearch";
 import TemplatesPanel from "./TemplatesPanel";
+import BookmarksPanel from "./BookmarksPanel";
 import { parseFrontmatter, buildBacklinks, buildTagIndex } from "../plugins/frontmatter";
 
 const THEME_BG: Record<ThemeName, string> = {
@@ -73,6 +74,13 @@ export default function App() {
 
   // Templates
   const [showTemplates, setShowTemplates] = useState(false);
+
+  // Bookmarks
+  const [bookmarks, setBookmarks] = useState<string[]>(() => {
+    const stored = localStorage.getItem("void-bookmarks");
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [showBookmarks, setShowBookmarks] = useState(false);
 
   // --- Refs for stable closures ---
   const activeNoteRef = useRef(activeNote);
@@ -281,6 +289,14 @@ export default function App() {
     handleContentChange(content);
   }, [handleContentChange]);
 
+  const toggleBookmark = useCallback((note: string) => {
+    setBookmarks((prev) => {
+      const next = prev.includes(note) ? prev.filter((n) => n !== note) : [...prev, note];
+      localStorage.setItem("void-bookmarks", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   const togglePreview = useCallback(() => setPreviewMode((prev) => !prev), []);
 
   const toggleSplitView = useCallback(() => {
@@ -406,9 +422,10 @@ export default function App() {
           onOpenGraph={() => setShowGraph(!showGraph)}
           onDailyNote={handleDailyNote}
           onOpenTemplates={() => setShowTemplates(true)}
+          onOpenBookmarks={() => setShowBookmarks(true)}
           onOpenSettings={() => setShowSettings(true)}
           onOpenSearch={() => setShowSearch(true)}
-          activePanel={showGraph ? "graph" : null}
+          activePanel={showGraph ? "graph" : showTemplates ? "templates" : showBookmarks ? "bookmarks" : null}
         />
       )}
 
@@ -422,12 +439,14 @@ export default function App() {
             vaultPath={vaultPath}
             tags={sortedTags}
             selectedTags={selectedTags}
+            bookmarks={bookmarks}
             onToggleTag={toggleTag}
             onToggleFocusMode={() => setFocusMode((v) => !v)}
             onSelect={openNote}
             onNew={handleNewNote}
             onDelete={handleDeleteNote}
             onRename={handleRenameNote}
+            onToggleBookmark={toggleBookmark}
             onOpenSearch={() => setShowSearch(true)}
             onOpenSettings={() => setShowSettings(true)}
             onOpenHelp={() => setShowHelp(true)}
@@ -563,6 +582,15 @@ export default function App() {
         <TemplatesPanel
           onInsertTemplate={handleInsertTemplate}
           onClose={() => setShowTemplates(false)}
+        />
+      )}
+      {showBookmarks && (
+        <BookmarksPanel
+          bookmarks={bookmarks}
+          activeNote={activeNote}
+          onToggleBookmark={toggleBookmark}
+          onSelect={(note) => { setShowBookmarks(false); openNote(note); }}
+          onClose={() => setShowBookmarks(false)}
         />
       )}
 

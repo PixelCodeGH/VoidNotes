@@ -9,12 +9,14 @@ interface SidebarProps {
   vaultPath: string | null;
   tags: string[];
   selectedTags: string[];
+  bookmarks: string[];
   onToggleTag: (tag: string) => void;
   onToggleFocusMode: () => void;
   onSelect: (fileName: string) => void;
   onNew: () => void;
   onDelete: (fileName: string) => void;
   onRename: (oldName: string) => void;
+  onToggleBookmark: (note: string) => void;
   onOpenSearch: () => void;
   onOpenSettings: () => void;
   onOpenHelp: () => void;
@@ -118,7 +120,7 @@ function FolderView({ node, activeNote, onSelect, onDelete, onContextMenu, depth
   );
 }
 
-export default function Sidebar({ notes, allNotes, activeNote, focusMode, vaultPath, tags, selectedTags, onToggleTag, onToggleFocusMode, onSelect, onNew, onDelete, onRename, onOpenSearch, onOpenSettings, onOpenHelp }: SidebarProps) {
+export default function Sidebar({ notes, allNotes, activeNote, focusMode, vaultPath, tags, selectedTags, bookmarks, onToggleTag, onToggleFocusMode, onSelect, onNew, onDelete, onRename, onToggleBookmark, onOpenSearch, onOpenSettings, onOpenHelp }: SidebarProps) {
   const tree = useMemo(() => buildTree(notes), [notes]);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; file: string } | null>(null);
 
@@ -138,6 +140,7 @@ export default function Sidebar({ notes, allNotes, activeNote, focusMode, vaultP
 
   const contextMenuItems: ContextMenuItem[] = contextMenu ? [
     { label: "Open", icon: "\u{1F4C4}", action: () => onSelect(contextMenu.file) },
+    { label: bookmarks.includes(contextMenu.file) ? "Remove bookmark" : "Bookmark", icon: bookmarks.includes(contextMenu.file) ? "\u{2B50}" : "\u{2606}", action: () => onToggleBookmark(contextMenu.file) },
     { label: "Rename", icon: "\u{270F}\u{FE0F}", action: () => handleRename(contextMenu.file) },
     { label: "Copy path", icon: "\u{1F4CB}", action: () => handleCopyPath(contextMenu.file) },
     { label: "Delete", icon: "\u{1F5D1}\u{FE0F}", action: () => onDelete(contextMenu.file), danger: true },
