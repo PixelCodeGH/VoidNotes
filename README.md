@@ -1,5 +1,7 @@
 # Void Notes
 
+[![Website](https://img.shields.io/badge/website-live-f0f0f0?style=flat&logo=googlechrome&logoColor=0a0a0a)](https://brutal-build.github.io/VoidNotes/)
+
 > A minimalist, brutalist-styled Markdown **second-brain** notepad.
 
 Built with **Electron 35** + **React 19** + **CodeMirror 6**. Local-first, no backend, no cloud — your notes stay on your disk as plain `.md` files.
