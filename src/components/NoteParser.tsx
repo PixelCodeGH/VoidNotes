@@ -13,9 +13,11 @@ interface NoteParserProps {
   content: string;
   noteNames?: string[];
   onWikiLinkClick?: (target: string) => void;
+  style?: React.CSSProperties;
+  className?: string;
 }
 
-export default function NoteParser({ content, noteNames, onWikiLinkClick }: NoteParserProps) {
+export default function NoteParser({ content, noteNames, onWikiLinkClick, style, className }: NoteParserProps) {
   const processed = useMemo(() => {
     const { protected: safe, fences } = extractCodeFences(content);
 
@@ -45,7 +47,7 @@ export default function NoteParser({ content, noteNames, onWikiLinkClick }: Note
   }, [processed, noteNames]);
 
   return (
-    <div className="pane-preview visible">
+    <div className={`pane-preview visible ${className || ""}`} style={style}>
       <div className="preview-wrapper">
         <div
           className="md-content"
