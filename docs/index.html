@@ -1,0 +1,259 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Void Notes — Minimalist Markdown Notepad</title>
+  <meta name="description" content="Void Notes. A local-first, privacy-focused Markdown notepad for thinkers. Built with Electron, React, and TypeScript." />
+  <meta name="theme-color" content="#0a0a0a" />
+  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <div class="container">
+      <a href="#" class="nav-logo">
+        <img src="logo.png" alt="Void Notes" />
+        <span>void notes</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">features</a></li>
+        <li><a href="#preview">preview</a></li>
+        <li><a href="#tech">stack</a></li>
+        <li><a href="https://github.com/brutal-build/VoidNotes/releases" class="nav-cta" target="_blank" rel="noopener">download</a></li>
+      </ul>
+      <button class="mobile-menu-btn" aria-label="Toggle menu" id="menuBtn">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <section class="hero" id="hero">
+    <div class="hero-content">
+      <div class="hero-badge">open source / mit license</div>
+      <h1><span class="void">Void</span> Notes.</h1>
+      <p class="hero-subtitle">Minimalist Markdown notepad for thinkers. Local-first, privacy-focused, blazing fast. Your second brain, on your disk.</p>
+      <div class="hero-buttons">
+        <a href="https://github.com/brutal-build/VoidNotes/releases" class="btn btn-primary" target="_blank" rel="noopener">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download for Desktop
+        </a>
+        <a href="https://github.com/brutal-build/VoidNotes" class="btn" target="_blank" rel="noopener">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+    </div>
+    <div class="scroll-indicator">
+      <span>scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="features" id="features">
+    <div class="container">
+      <div class="features-header reveal">
+        <p class="section-label">// features</p>
+        <h2 class="section-title">Everything you need.<br/>Nothing you don't.</h2>
+        <p class="section-desc">No cloud. No subscriptions. No telemetry. Just pure, fast, local Markdown editing with the features that actually matter.</p>
+      </div>
+      <div class="features-grid reveal">
+        <div class="feature-card">
+          <span class="feature-icon">&#9632;</span>
+          <h3>Local-first &amp; Private</h3>
+          <p>Every note saved as a plain .md file on your disk. No accounts, no servers, no sync. Your data belongs to you, always.</p>
+          <span class="feature-tag">privacy by design</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">&#8677;</span>
+          <h3>Markdown Native</h3>
+          <p>Write in pure Markdown with syntax highlighting, live preview, split view, and full GFM support. Toggle between edit and preview instantly.</p>
+          <span class="feature-tag">gfm / codeMirror 6</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">&#8801;</span>
+          <h3>Graph View &amp; Links</h3>
+          <p>Connect ideas with [[wiki links]], explore your knowledge graph visually, and discover backlinks automatically across all your notes.</p>
+          <span class="feature-tag">second brain</span>
+        </div>
+        <div class="feature-card">
+          <span class="feature-icon">&#9889;</span>
+          <h3>Blazing Fast</h3>
+          <p>Electron + React + TypeScript + Vite. Opens instantly, scrolls smoothly, auto-saves in 500ms. Under 100MB RAM. No bloat, ever.</p>
+          <span class="feature-tag">lightweight</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="preview" id="preview">
+    <div class="container">
+      <div class="preview-header reveal">
+        <p class="section-label">// interface</p>
+        <h2 class="section-title">Clean. Focused. Yours.</h2>
+        <p class="section-desc">A brutalist interface that stays out of your way. Five built-in themes, command palette, focus mode, and Vim keybindings.</p>
+      </div>
+      <div class="mockup-frame reveal">
+        <div class="mockup-titlebar">
+          <div class="mockup-dot red"></div>
+          <div class="mockup-dot yellow"></div>
+          <div class="mockup-dot green"></div>
+          <span class="mockup-title">Void Notes &mdash; notes/ideas.md</span>
+        </div>
+        <div class="mockup-body">
+          <div class="mockup-sidebar">
+            <div class="mockup-sidebar-header">Explorer</div>
+            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> readme.md</div>
+            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> todo.md</div>
+            <div class="mockup-file active"><span class="mockup-file-icon">&#128196;</span> ideas.md</div>
+            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> journal.md</div>
+            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> projects.md</div>
+            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> references.md</div>
+          </div>
+          <div class="mockup-editor">
+            <div><span class="line-num">1</span><span class="heading">## Project Ideas</span></div>
+            <div><span class="line-num">2</span></div>
+            <div><span class="line-num">3</span>A collection of <span class="bold">**random thoughts**</span></div>
+            <div><span class="line-num">4</span>and half-baked ideas.</div>
+            <div><span class="line-num">5</span></div>
+            <div><span class="line-num">6</span><span class="heading">### Notetaking App</span></div>
+            <div><span class="line-num">7</span></div>
+            <div><span class="line-num">8</span>Build a <span class="bold">**local-first**</span> Markdown editor</div>
+            <div><span class="line-num">9</span>with <span class="link">[[graph view]]</span> support.</div>
+            <div><span class="line-num">10</span></div>
+            <div><span class="line-num">11</span><span class="code">`tech: electron + react`</span></div>
+            <div><span class="line-num">12</span></div>
+            <div><span class="line-num">13</span><span class="tag">#project</span> <span class="tag">#dev</span> <span class="tag">#markdown</span></div>
+            <div><span class="line-num">14</span></div>
+            <div><span class="line-num">15</span><span class="comment">&gt; [!TIP] Keep it simple.</span></div>
+            <div><span class="line-num">16</span><span class="comment">&gt; Complexity is the enemy.</span></div>
+          </div>
+          <div class="mockup-preview">
+            <h2>Project Ideas</h2>
+            <p>A collection of <strong>random thoughts</strong> and half-baked ideas.</p>
+            <h3>Notetaking App</h3>
+            <p>Build a <strong>local-first</strong> Markdown editor with <span class="preview-link">graph view</span> support.</p>
+            <p><span class="preview-code">tech: electron + react</span></p>
+            <p><span class="preview-tag">#project</span> <span class="preview-tag">#dev</span> <span class="preview-tag">#markdown</span></p>
+            <div style="border-left:3px solid #61afef;padding:0.5rem 0.75rem;margin-top:0.5rem;background:rgba(97,175,239,0.05);">
+              <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);">Keep it simple. Complexity is the enemy.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="tech" id="tech">
+    <div class="container">
+      <div class="tech-header reveal">
+        <p class="section-label">// tech stack</p>
+        <h2 class="section-title">Built with modern tools.</h2>
+        <p class="section-desc">Every dependency chosen deliberately. No unnecessary abstractions, no framework bloat.</p>
+      </div>
+      <div class="tech-grid reveal">
+        <div class="tech-item">
+          <div class="tech-item-name">Electron 35</div>
+          <div class="tech-item-role">desktop runtime</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-name">React 19</div>
+          <div class="tech-item-role">ui framework</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-name">TypeScript 5</div>
+          <div class="tech-item-role">type safety</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-name">Vite 6</div>
+          <div class="tech-item-role">bundler</div>
+        </div>
+        <div class="tech-item">
+          <div class="tech-item-name">CodeMirror 6</div>
+          <div class="tech-item-role">editor engine</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="cta-section">
+    <div class="container reveal">
+      <p class="section-label">// get started</p>
+      <h2 class="section-title">Ready to think in Markdown?</h2>
+      <p class="section-desc">Free, open-source, and always will be. Clone it, fork it, make it yours.</p>
+      <div class="hero-buttons">
+        <a href="https://github.com/brutal-build/VoidNotes/releases" class="btn btn-primary" target="_blank" rel="noopener">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download v0.1.0
+        </a>
+        <a href="https://github.com/brutal-build/VoidNotes" class="btn" target="_blank" rel="noopener">
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          Star on GitHub
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-left">
+        <img src="logo.png" alt="Void Notes" />
+        <span>&copy; 2026 brutal-build &middot; MIT License</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/brutal-build/VoidNotes" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/brutal-build/VoidNotes/releases" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/brutal-build/VoidNotes/blob/main/LICENSE" target="_blank" rel="noopener">License</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Scroll-reveal observer
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach(el => observer.observe(el));
+
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('menuBtn');
+    const navLinks = document.querySelector('.nav-links');
+    if (menuBtn) {
+      menuBtn.addEventListener('click', () => {
+        navLinks.classList.toggle('open');
+        menuBtn.classList.toggle('open');
+      });
+    }
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          if (navLinks) navLinks.classList.remove('open');
+          if (menuBtn) menuBtn.classList.remove('open');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
