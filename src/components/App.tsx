@@ -14,6 +14,7 @@ import TabBar, { Tab } from "./TabBar";
 import RightPanel from "./RightPanel";
 import GraphView from "./GraphView";
 import GlobalSearch from "./GlobalSearch";
+import TemplatesPanel from "./TemplatesPanel";
 import { parseFrontmatter, buildBacklinks, buildTagIndex } from "../plugins/frontmatter";
 
 const THEME_BG: Record<ThemeName, string> = {
@@ -69,6 +70,9 @@ export default function App() {
 
   // Global search
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
+
+  // Templates
+  const [showTemplates, setShowTemplates] = useState(false);
 
   // --- Refs for stable closures ---
   const activeNoteRef = useRef(activeNote);
@@ -272,6 +276,11 @@ export default function App() {
     if (notes.includes(fileName)) await openNote(fileName);
   }, [notes, openNote]);
 
+  const handleInsertTemplate = useCallback((content: string) => {
+    setRawContent(content);
+    handleContentChange(content);
+  }, [handleContentChange]);
+
   const togglePreview = useCallback(() => setPreviewMode((prev) => !prev), []);
 
   const toggleSplitView = useCallback(() => {
@@ -396,7 +405,7 @@ export default function App() {
           onNewFolder={handleNewFolder}
           onOpenGraph={() => setShowGraph(!showGraph)}
           onDailyNote={handleDailyNote}
-          onOpenTemplates={() => {}}
+          onOpenTemplates={() => setShowTemplates(true)}
           onOpenSettings={() => setShowSettings(true)}
           onOpenSearch={() => setShowSearch(true)}
           activePanel={showGraph ? "graph" : null}
@@ -548,6 +557,12 @@ export default function App() {
           contents={allContents.current}
           onSelect={(note) => { setShowGlobalSearch(false); openNote(note); }}
           onClose={() => setShowGlobalSearch(false)}
+        />
+      )}
+      {showTemplates && (
+        <TemplatesPanel
+          onInsertTemplate={handleInsertTemplate}
+          onClose={() => setShowTemplates(false)}
         />
       )}
 
