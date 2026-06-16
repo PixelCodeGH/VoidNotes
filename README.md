@@ -30,12 +30,25 @@ Get the latest installer from the **[Releases](https://github.com/brutal-build/V
 - **Left Ribbon** — vertical icon bar (new note, new folder, search, daily note, graph, templates, bookmarks, settings)
 - **Tab System** — VS Code-style tabs with drag reorder and close buttons
 - **Graph View** — interactive force-directed graph of note connections (`react-force-graph`)
-- **Right Panel** — backlinks, tags, and outline/TOC tabs
+- **Right Panel** — resizable panel with Backlinks, Tags, Outline, and Properties tabs; tabs scroll horizontally when space is tight
+- **Split View Tooltip** — draggable divider now shows live editor/preview percentage while resizing
 - **Global Search** — `Ctrl+Shift+F` search across all notes with context
 - **Templates** — built-in templates (Daily Note, Meeting Notes, Project, Book Notes, Journal)
 - **Bookmarks** — star/bookmark notes via right-click context menu
 - **Command Palette** — `Ctrl+P` fuzzy search across all notes
 - **Focus Mode** — `F9` hides everything except the editor
+
+---
+
+## Changelog
+
+### v0.1.1
+- Made the right panel resizable (min 200 px, max 480 px, width persisted)
+- Fixed clipped panel tabs: Backlinks/Tags/Outline/Properties/Calendar now fully readable with horizontal scroll
+- Added live percentage tooltip while dragging the split-view divider
+- Editor area no longer collapses below 360 px when right panel is widened
+- Minor CSS cleanup of unused right-panel styles
+- Version bump to 0.1.1 across package and in-app About panel
 
 ---
 

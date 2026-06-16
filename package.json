@@ -1,8 +1,8 @@
 {
   "name": "void-notes",
   "productName": "Void Notes",
-  "version": "0.1.0",
-  "description": "Second-brain notatnik Markdown oparty o Electron + React + CodeMirror 6",
+  "version": "0.1.1",
+  "description": "A knowledge management Markdown notepad built with Electron + React + CodeMirror 6.",
   "main": "dist-electron/main.js",
   "author": "brutal-build",
   "license": "MIT",
@@ -73,6 +73,8 @@
     "gray-matter": "^4.0.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-force-graph": "^1.48.2",
+    "react-force-graph-2d": "^1.29.1",
     "react-markdown": "^10.1.0",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1"

@@ -17,6 +17,7 @@ import GlobalSearch from "./GlobalSearch";
 import TemplatesPanel from "./TemplatesPanel";
 import BookmarksPanel from "./BookmarksPanel";
 import CanvasView from "./CanvasView";
+import WorkspacesPanel, { Workspace } from "./WorkspacesPanel";
 import { parseFrontmatter, buildBacklinks, buildTagIndex } from "../plugins/frontmatter";
 
 const THEME_BG: Record<ThemeName, string> = {
@@ -41,6 +42,7 @@ export default function App() {
   const [splitDragging, setSplitDragging] = useState(false);
   const splitStartX = useRef(0);
   const splitStartRatio = useRef(0);
+  const [splitTooltip, setSplitTooltip] = useState<{ visible: boolean; x: number; y: number; ratio: number }>({ visible: false, x: 0, y: 0, ratio: 0.5 });
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [vimMode, setVimMode] = useState(() => localStorage.getItem("void-vim-mode") === "true");
   const tagIndex = useRef<Map<string, string[]>>(new Map());
@@ -62,7 +64,7 @@ export default function App() {
   const [openTabs, setOpenTabs] = useState<Tab[]>([]);
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [showRightPanel, setShowRightPanel] = useState(true);
-  const [activePanelTab, setActivePanelTab] = useState<"backlinks" | "tags" | "outline">("backlinks");
+  const [activePanelTab, setActivePanelTab] = useState("backlinks");
   const [showGraph, setShowGraph] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
@@ -72,11 +74,26 @@ export default function App() {
   });
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [showCanvas, setShowCanvas] = useState(false);
+  const [showWorkspaces, setShowWorkspaces] = useState(false);
+  const [workspaceRevision, setWorkspaceRevision] = useState(0);
 
   // Editor settings
   const [readableLineLength, setReadableLineLength] = useState(() => localStorage.getItem("void-readable-line") === "true");
   const [editorFont, setEditorFont] = useState(() => localStorage.getItem("void-editor-font") || "Cascadia Code, Fira Code, JetBrains Mono, Consolas, monospace");
   const [spellcheck, setSpellcheck] = useState(() => localStorage.getItem("void-spellcheck") !== "false");
+  const [transparentMode, setTransparentMode] = useState(() => localStorage.getItem("void-transparent") === "true");
+  const [cursor, setCursor] = useState({ line: 1, col: 1, mode: "Edit" });
+
+  const currentLayout: Workspace = useMemo(() => ({
+    name: "",
+    sidebarWidth: parseInt(localStorage.getItem("void-sidebar-width") || "240", 10),
+    showRightPanel,
+    splitView,
+    splitRatio,
+    theme,
+    focusMode,
+    rightPanelTab: activePanelTab,
+  }), [showRightPanel, splitView, splitRatio, theme, focusMode, activePanelTab]);
 
   const activeNoteRef = useRef(activeNote);
   const rawContentRef = useRef(rawContent);
@@ -98,6 +115,11 @@ export default function App() {
     localStorage.setItem("void-notes-theme", theme);
     window.electronAPI.setBackground(THEME_BG[theme]);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("void-transparent", String(transparentMode));
+    window.electronAPI.setOpacity(transparentMode ? 0.85 : 1);
+  }, [transparentMode]);
 
   useEffect(() => {
     window.electronAPI.getVault().then((p) => {
@@ -198,6 +220,28 @@ export default function App() {
     await refreshBacklinks(files);
   }, [renamingFile, renameValue, activeNote, refreshNotes, refreshBacklinks]);
 
+  const handleMoveNote = useCallback(async (fileName: string, targetFolder: string) => {
+    const result = await window.electronAPI.moveNote(fileName, targetFolder);
+    if (!result) return;
+    if (activeNote === fileName) setActiveNote(result);
+    const files = await refreshNotes();
+    await refreshBacklinks(files);
+  }, [activeNote, refreshNotes, refreshBacklinks]);
+
+  const handleLoadWorkspace = useCallback((ws: Workspace) => {
+    localStorage.setItem("void-sidebar-width", String(ws.sidebarWidth));
+    setShowRightPanel(ws.showRightPanel);
+    setSplitView(ws.splitView);
+    setSplitRatio(ws.splitRatio);
+    localStorage.setItem("void-split-view", String(ws.splitView));
+    localStorage.setItem("void-split-ratio", String(ws.splitRatio));
+    setTheme(ws.theme as ThemeName);
+    setFocusMode(ws.focusMode);
+    setActivePanelTab(ws.rightPanelTab);
+    setWorkspaceRevision((v) => v + 1);
+    setShowWorkspaces(false);
+  }, []);
+
   const handleContentChange = useCallback((value: string) => {
     setRawContent(value);
     setSaved(false);
@@ -266,6 +310,7 @@ export default function App() {
     setSplitDragging(true);
     splitStartX.current = e.clientX;
     splitStartRatio.current = splitRatio;
+    setSplitTooltip({ visible: true, x: e.clientX, y: e.clientY, ratio: splitRatio });
   }, [splitRatio]);
 
   useEffect(() => {
@@ -275,9 +320,11 @@ export default function App() {
       if (!container) return;
       const rect = container.getBoundingClientRect();
       const delta = e.clientX - splitStartX.current;
-      setSplitRatio(Math.min(0.9, Math.max(0.1, splitStartRatio.current + delta / rect.width)));
+      const newRatio = Math.min(0.9, Math.max(0.1, splitStartRatio.current + delta / rect.width));
+      setSplitRatio(newRatio);
+      setSplitTooltip((prev) => ({ ...prev, x: e.clientX, y: e.clientY, ratio: newRatio }));
     };
-    const handleMouseUp = () => { setSplitDragging(false); localStorage.setItem("void-split-ratio", String(splitRatio)); };
+    const handleMouseUp = () => { setSplitDragging(false); localStorage.setItem("void-split-ratio", String(splitRatio)); setSplitTooltip((prev) => ({ ...prev, visible: false })); };
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
     return () => { document.removeEventListener("mousemove", handleMouseMove); document.removeEventListener("mouseup", handleMouseUp); };
@@ -342,10 +389,10 @@ export default function App() {
 
   return (
     <div className="app">
-      {!focusMode && <LeftRibbon onNewNote={handleNewNote} onNewFolder={handleNewFolder} onOpenGraph={() => setShowGraph(!showGraph)} onDailyNote={handleDailyNote} onOpenTemplates={() => setShowTemplates(true)} onOpenBookmarks={() => setShowBookmarks(true)} onOpenCanvas={() => setShowCanvas(true)} onOpenSettings={() => setShowSettings(true)} onOpenSearch={() => setShowSearch(true)} activePanel={showGraph ? "graph" : showTemplates ? "templates" : showBookmarks ? "bookmarks" : showCanvas ? "canvas" : null} />}
+      {!focusMode && <LeftRibbon onNewNote={handleNewNote} onNewFolder={handleNewFolder} onOpenGraph={() => setShowGraph(!showGraph)} onDailyNote={handleDailyNote} onOpenTemplates={() => setShowTemplates(true)} onOpenBookmarks={() => setShowBookmarks(true)} onOpenCanvas={() => setShowCanvas(true)} onOpenSettings={() => setShowSettings(true)} onOpenSearch={() => setShowSearch(true)} onOpenWorkspaces={() => setShowWorkspaces(true)} activePanel={showGraph ? "graph" : showTemplates ? "templates" : showBookmarks ? "bookmarks" : showCanvas ? "canvas" : null} />}
       {!focusMode && (
-        <ResizablePanel side="left" defaultWidth={240} minWidth={180} maxWidth={400} storageKey="void-sidebar-width">
-          <Sidebar notes={filteredNotes} allNotes={notes} activeNote={activeNote} focusMode={focusMode} vaultPath={vaultPath} tags={sortedTags} selectedTags={selectedTags} bookmarks={bookmarks} onToggleTag={toggleTag} onToggleFocusMode={() => setFocusMode((v) => !v)} onSelect={openNote} onNew={handleNewNote} onDelete={handleDeleteNote} onRename={handleRenameNote} onToggleBookmark={toggleBookmark} onOpenSearch={() => setShowSearch(true)} onOpenSettings={() => setShowSettings(true)} onOpenHelp={() => setShowHelp(true)} />
+        <ResizablePanel key={`sidebar-${workspaceRevision}`} side="left" defaultWidth={240} minWidth={180} maxWidth={400} storageKey="void-sidebar-width">
+          <Sidebar notes={filteredNotes} allNotes={notes} activeNote={activeNote} focusMode={focusMode} vaultPath={vaultPath} tags={sortedTags} selectedTags={selectedTags} bookmarks={bookmarks} onToggleTag={toggleTag} onToggleFocusMode={() => setFocusMode((v) => !v)} onSelect={openNote} onNew={handleNewNote} onDelete={handleDeleteNote} onRename={handleRenameNote} onToggleBookmark={toggleBookmark} onMoveNote={handleMoveNote} onOpenSearch={() => setShowSearch(true)} onOpenSettings={() => setShowSettings(true)} onOpenHelp={() => setShowHelp(true)} />
         </ResizablePanel>
       )}
       {focusMode && (
@@ -372,21 +419,30 @@ export default function App() {
             {splitView && activeNote ? (
               <>
                 <div className="pane-editor pane-enter" style={{ flex: `0 0 ${splitRatio * 100}%` }}>
-                  <div className="editor-wrapper"><NoteEditor content={rawContent} onChange={handleContentChange} noteNames={notes} vimMode={vimMode} readableLineLength={readableLineLength} editorFont={editorFont} /></div>
+                  <div className="editor-wrapper"><NoteEditor content={rawContent} onChange={handleContentChange} noteNames={notes} vimMode={vimMode} readableLineLength={readableLineLength} editorFont={editorFont} spellcheck={spellcheck} onCursorChange={(line, col, mode) => setCursor({ line, col, mode })} /></div>
                 </div>
                 <div className="split-divider" onMouseDown={handleSplitMouseDown} style={{ cursor: "col-resize" }} />
                 <NoteParser content={rawContent} noteNames={notes} className="pane-preview" style={{ flex: `0 0 ${(1 - splitRatio) * 100}%` }} onWikiLinkClick={handleWikiLinkClick} />
               </>
             ) : (
               <>
-                {!previewMode && activeNote && <div className="pane-editor pane-enter"><div className="editor-wrapper"><NoteEditor content={rawContent} onChange={handleContentChange} noteNames={notes} vimMode={vimMode} readableLineLength={readableLineLength} editorFont={editorFont} /></div></div>}
+                {!previewMode && activeNote && <div className="pane-editor pane-enter"><div className="editor-wrapper"><NoteEditor content={rawContent} onChange={handleContentChange} noteNames={notes} vimMode={vimMode} readableLineLength={readableLineLength} editorFont={editorFont} spellcheck={spellcheck} onCursorChange={(line, col, mode) => setCursor({ line, col, mode })} /></div></div>}
                 {previewMode && activeNote && <NoteParser content={rawContent} noteNames={notes} onWikiLinkClick={handleWikiLinkClick} />}
               </>
             )}
           </div>
-          {showRightPanel && activeNote && <RightPanel activeNote={activeNote} content={rawContent} backlinks={noteBacklinks} tags={sortedTags} onNavigate={openNote} activePanelTab={activePanelTab} onPanelTabChange={setActivePanelTab} />}
+          {splitTooltip.visible && (
+            <div className="split-tooltip" style={{ left: splitTooltip.x, top: splitTooltip.y }}>
+              Editor {Math.round(splitTooltip.ratio * 100)}% · Preview {Math.round((1 - splitTooltip.ratio) * 100)}%
+            </div>
+          )}
+          {showRightPanel && activeNote && (
+            <ResizablePanel side="right" defaultWidth={280} minWidth={200} maxWidth={480} storageKey="void-right-panel-width">
+              <RightPanel activeNote={activeNote} content={rawContent} backlinks={noteBacklinks} tags={sortedTags} onNavigate={openNote} onContentChange={handleContentChange} activePanelTab={activePanelTab} onPanelTabChange={setActivePanelTab} />
+            </ResizablePanel>
+          )}
         </div>
-        <StatusBar content={rawContent} noteCount={notes.length} activeNote={activeNote} saved={saved} />
+        <StatusBar content={rawContent} noteCount={notes.length} activeNote={activeNote} saved={saved} cursor={cursor} vimMode={vimMode} />
       </div>
       {showSearch && <CommandPalette notes={notes} onSelect={(file) => { setShowSearch(false); openNote(file); }} onClose={() => setShowSearch(false)} />}
       {showSettings && <Settings
@@ -403,6 +459,8 @@ export default function App() {
         onEditorFontChange={(f) => { setEditorFont(f); localStorage.setItem("void-editor-font", f); }}
         spellcheck={spellcheck}
         onSpellcheckChange={(v) => { setSpellcheck(v); localStorage.setItem("void-spellcheck", String(v)); }}
+        transparentMode={transparentMode}
+        onTransparentModeChange={(v) => { setTransparentMode(v); localStorage.setItem("void-transparent", String(v)); }}
       />}
       {showHelp && <Help onClose={() => setShowHelp(false)} />}
       {showGraph && <GraphView notes={notes} backlinks={backlinks} activeNote={activeNote} onNodeClick={(note) => { setShowGraph(false); openNote(note); }} onClose={() => setShowGraph(false)} />}
@@ -410,6 +468,7 @@ export default function App() {
       {showTemplates && <TemplatesPanel onInsertTemplate={handleInsertTemplate} onClose={() => setShowTemplates(false)} />}
       {showBookmarks && <BookmarksPanel bookmarks={bookmarks} activeNote={activeNote} onToggleBookmark={toggleBookmark} onSelect={(note) => { setShowBookmarks(false); openNote(note); }} onClose={() => setShowBookmarks(false)} />}
       {showCanvas && <CanvasView onClose={() => setShowCanvas(false)} />}
+      {showWorkspaces && <WorkspacesPanel currentLayout={currentLayout} onLoadWorkspace={handleLoadWorkspace} onClose={() => setShowWorkspaces(false)} />}
       {renamingFile && (
         <div className="modal-overlay" onClick={() => setRenamingFile(null)}>
           <div className="modal" style={{ width: 360 }} onClick={(e) => e.stopPropagation()}>

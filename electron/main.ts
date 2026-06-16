@@ -74,6 +74,12 @@ ipcMain.handle("window:set-background", (_event, color: string) => {
   }
 });
 
+ipcMain.handle("window:set-opacity", (_event, opacity: number) => {
+  if (mainWindow) {
+    mainWindow.setOpacity(opacity);
+  }
+});
+
 // --- Vault ---
 
 function createWelcomeFile(dir: string): void {
@@ -431,7 +437,23 @@ ipcMain.handle("notes:stat", async (_event, fileName: string) => {
   }
 });
 
-
+ipcMain.handle("notes:move", async (_event, fileName: string, targetFolder: string) => {
+  try {
+    if (!vaultPath) return false;
+    const oldPath = safePath(fileName);
+    if (!oldPath || !fs.existsSync(oldPath)) return false;
+    const targetDir = path.join(vaultPath, targetFolder);
+    if (!targetDir.startsWith(vaultPath)) return false;
+    if (!fs.existsSync(targetDir)) fs.mkdirSync(targetDir, { recursive: true });
+    const baseName = path.basename(oldPath);
+    const newPath = path.join(targetDir, baseName);
+    if (fs.existsSync(newPath)) return false;
+    fs.renameSync(oldPath, newPath);
+    return targetFolder ? `${targetFolder}/${baseName}` : baseName;
+  } catch {
+    return false;
+  }
+});
 
 app.whenReady().then(() => {
   loadConfig();

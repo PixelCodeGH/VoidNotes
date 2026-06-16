@@ -32,6 +32,8 @@ interface SettingsProps {
   onEditorFontChange: (font: string) => void;
   spellcheck: boolean;
   onSpellcheckChange: (v: boolean) => void;
+  transparentMode: boolean;
+  onTransparentModeChange: (v: boolean) => void;
 }
 
 export default function Settings({
@@ -48,6 +50,8 @@ export default function Settings({
   onEditorFontChange,
   spellcheck,
   onSpellcheckChange,
+  transparentMode,
+  onTransparentModeChange,
 }: SettingsProps) {
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -128,6 +132,14 @@ export default function Settings({
               </button>
             </div>
             <p className="settings-hint">Enable browser spellcheck in the editor.</p>
+
+            <div className="settings-toggle-row" style={{ marginTop: "var(--space-md)" }}>
+              <span className="settings-toggle-label">Transparent Window</span>
+              <button className={`toggle-btn ${transparentMode ? "active" : ""}`} onClick={() => onTransparentModeChange(!transparentMode)}>
+                <div className="toggle-knob" />
+              </button>
+            </div>
+            <p className="settings-hint">Make the window slightly transparent (85% opacity).</p>
           </div>
 
           <div className="settings-section">

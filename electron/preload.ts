@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   maximize: () => ipcRenderer.invoke("window:maximize"),
   close: () => ipcRenderer.invoke("window:close"),
   setBackground: (color: string) => ipcRenderer.invoke("window:set-background", color),
+  setOpacity: (opacity: number) => ipcRenderer.invoke("window:set-opacity", opacity),
 
   // Vault
   selectVault: () => ipcRenderer.invoke("vault:select"),
@@ -20,4 +21,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   deleteNote: (fileName: string) => ipcRenderer.invoke("notes:delete", fileName),
   renameNote: (oldName: string, newName: string) => ipcRenderer.invoke("notes:rename", oldName, newName),
   statNote: (fileName: string) => ipcRenderer.invoke("notes:stat", fileName),
+  moveNote: (fileName: string, targetFolder: string) => ipcRenderer.invoke("notes:move", fileName, targetFolder),
 });

@@ -10,6 +10,7 @@ interface LeftRibbonProps {
   onOpenCanvas: () => void;
   onOpenSettings: () => void;
   onOpenSearch: () => void;
+  onOpenWorkspaces: () => void;
   activePanel: "graph" | "templates" | "bookmarks" | "canvas" | null;
 }
 
@@ -23,6 +24,7 @@ export default function LeftRibbon({
   onOpenCanvas,
   onOpenSettings,
   onOpenSearch,
+  onOpenWorkspaces,
   activePanel,
 }: LeftRibbonProps) {
   return (
@@ -78,6 +80,11 @@ export default function LeftRibbon({
         <button className={`ribbon-btn ${activePanel === "canvas" ? "active" : ""}`} onClick={onOpenCanvas} title="Canvas">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>
+          </svg>
+        </button>
+        <button className="ribbon-btn" onClick={onOpenWorkspaces} title="Workspaces">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="3" width="20" height="7" rx="2" ry="2"/><rect x="2" y="14" width="20" height="7" rx="2" ry="2"/>
           </svg>
         </button>
         <button className="ribbon-btn" onClick={onOpenSettings} title="Settings (Ctrl+,)">
