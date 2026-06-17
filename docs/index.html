@@ -147,57 +147,90 @@
         <h2 class="section-title">Clean. Focused. Yours.</h2>
         <p class="section-desc">A brutalist interface that stays out of your way. Five built-in themes, command palette, focus mode, and Vim keybindings.</p>
       </div>
-      <div class="mockup-frame reveal">
-        <div class="mockup-titlebar">
-          <div class="mockup-dot red"></div>
-          <div class="mockup-dot yellow"></div>
-          <div class="mockup-dot green"></div>
-          <span class="mockup-title">Void Notes &mdash; notes/ideas.md</span>
-        </div>
-        <div class="mockup-body">
-          <div class="mockup-sidebar">
-            <div class="mockup-sidebar-header">Explorer</div>
-            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> readme.md</div>
-            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> todo.md</div>
-            <div class="mockup-file active"><span class="mockup-file-icon">&#128196;</span> ideas.md</div>
-            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> journal.md</div>
-            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> projects.md</div>
-            <div class="mockup-file"><span class="mockup-file-icon">&#128196;</span> references.md</div>
-          </div>
-          <div class="mockup-editor">
-            <div><span class="line-num">1</span><span class="heading">## Project Ideas</span></div>
-            <div><span class="line-num">2</span></div>
-            <div><span class="line-num">3</span>A collection of <span class="bold">**random thoughts**</span></div>
-            <div><span class="line-num">4</span>and half-baked ideas.</div>
-            <div><span class="line-num">5</span></div>
-            <div><span class="line-num">6</span><span class="heading">### Notetaking App</span></div>
-            <div><span class="line-num">7</span></div>
-            <div><span class="line-num">8</span>Build a <span class="bold">**local-first**</span> Markdown editor</div>
-            <div><span class="line-num">9</span>with <span class="link">[[graph view]]</span> support.</div>
-            <div><span class="line-num">10</span></div>
-            <div><span class="line-num">11</span><span class="code">`tech: electron + react`</span></div>
-            <div><span class="line-num">12</span></div>
-            <div><span class="line-num">13</span><span class="tag">#project</span> <span class="tag">#dev</span> <span class="tag">#markdown</span></div>
-            <div><span class="line-num">14</span></div>
-            <div><span class="line-num">15</span><span class="comment">&gt; [!TIP] Keep it simple.</span></div>
-            <div><span class="line-num">16</span><span class="comment">&gt; Complexity is the enemy.</span></div>
-          </div>
-          <div class="mockup-preview">
-            <h2>Project Ideas</h2>
-            <p>A collection of <strong>random thoughts</strong> and half-baked ideas.</p>
-            <h3>Notetaking App</h3>
-            <p>Build a <strong>local-first</strong> Markdown editor with <span class="preview-link">graph view</span> support.</p>
-            <p><span class="preview-code">tech: electron + react</span></p>
-            <p><span class="preview-tag">#project</span> <span class="preview-tag">#dev</span> <span class="preview-tag">#markdown</span></p>
-            <div style="border-left:3px solid #61afef;padding:0.5rem 0.75rem;margin-top:0.5rem;background:rgba(97,175,239,0.05);">
-              <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);">Keep it simple. Complexity is the enemy.</p>
+
+      <div class="gallery-filters reveal">
+        <button class="gallery-filter active" data-filter="all">All</button>
+        <button class="gallery-filter" data-filter="dark">Dark</button>
+        <button class="gallery-filter" data-filter="light">Light</button>
+      </div>
+
+      <div class="gallery-grid reveal">
+        <div class="gallery-item" data-theme="dark" data-label="Split View — Markdown Formatting">
+          <div class="gallery-img-wrap">
+            <img src="screenshots/1.png" alt="Void Notes dark split view showing markdown formatting" loading="lazy" />
+            <div class="gallery-overlay">
+              <span class="gallery-zoom">&#8853; expand</span>
             </div>
+          </div>
+          <div class="gallery-caption">
+            <span class="gallery-theme-tag dark">dark</span>
+            <span class="gallery-name">Split View — Markdown table, YAML frontmatter, live preview</span>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-theme="light" data-label="Light Theme — Split View">
+          <div class="gallery-img-wrap">
+            <img src="screenshots/2.png" alt="Void Notes light theme split view" loading="lazy" />
+            <div class="gallery-overlay">
+              <span class="gallery-zoom">&#8853; expand</span>
+            </div>
+          </div>
+          <div class="gallery-caption">
+            <span class="gallery-theme-tag light">light</span>
+            <span class="gallery-name">Light Theme — syntax highlighting, live preview</span>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-theme="dark" data-label="Dark Theme — Editor &amp; Preview">
+          <div class="gallery-img-wrap">
+            <img src="screenshots/3.png" alt="Void Notes dark theme editor and preview" loading="lazy" />
+            <div class="gallery-overlay">
+              <span class="gallery-zoom">&#8853; expand</span>
+            </div>
+          </div>
+          <div class="gallery-caption">
+            <span class="gallery-theme-tag dark">dark</span>
+            <span class="gallery-name">Dark Theme — CodeMirror editor with syntax highlighting</span>
+          </div>
+        </div>
+
+        <div class="gallery-item gallery-item-wide" data-theme="dark" data-label="Feature Showcase — Text Formatting">
+          <div class="gallery-img-wrap">
+            <img src="screenshots/4.png" alt="Void Notes feature showcase with formatting table" loading="lazy" />
+            <div class="gallery-overlay">
+              <span class="gallery-zoom">&#8853; expand</span>
+            </div>
+          </div>
+          <div class="gallery-caption">
+            <span class="gallery-theme-tag dark">dark</span>
+            <span class="gallery-name">Feature Showcase — bold, italic, underline, code, highlight, spoiler</span>
+          </div>
+        </div>
+
+        <div class="gallery-item" data-theme="dark" data-label="Dark Theme — Split Editor">
+          <div class="gallery-img-wrap">
+            <img src="screenshots/5.png" alt="Void Notes dark theme split editor view" loading="lazy" />
+            <div class="gallery-overlay">
+              <span class="gallery-zoom">&#8853; expand</span>
+            </div>
+          </div>
+          <div class="gallery-caption">
+            <span class="gallery-theme-tag dark">dark</span>
+            <span class="gallery-name">Split View — status bar, YAML frontmatter, tags</span>
           </div>
         </div>
       </div>
-      <p class="preview-coming-soon">real screenshot coming soon — stay tuned</p>
     </div>
   </section>
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox">
+    <button class="lightbox-close" id="lightboxClose">&times;</button>
+    <button class="lightbox-prev" id="lightboxPrev">&#8249;</button>
+    <button class="lightbox-next" id="lightboxNext">&#8250;</button>
+    <img class="lightbox-img" id="lightboxImg" alt="Expanded screenshot" />
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+  </div>
 
   <hr class="divider" />
 
@@ -301,6 +334,86 @@
           if (menuBtn) menuBtn.classList.remove('open');
         }
       });
+    });
+
+    // --- Gallery Filter ---
+    const filterBtns = document.querySelectorAll('.gallery-filter');
+    const galleryItems = document.querySelectorAll('.gallery-item');
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const filter = btn.dataset.filter;
+        galleryItems.forEach(item => {
+          if (filter === 'all' || item.dataset.theme === filter) {
+            item.style.display = '';
+            setTimeout(() => item.style.opacity = '1', 10);
+          } else {
+            item.style.opacity = '0';
+            setTimeout(() => item.style.display = 'none', 300);
+          }
+        });
+      });
+    });
+
+    // --- Lightbox ---
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxCaption = document.getElementById('lightboxCaption');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const lightboxPrev = document.getElementById('lightboxPrev');
+    const lightboxNext = document.getElementById('lightboxNext');
+    let currentIndex = -1;
+    const visibleItems = () => [...galleryItems].filter(i => i.style.display !== 'none');
+
+    document.querySelectorAll('.gallery-img-wrap').forEach((wrap, idx) => {
+      wrap.addEventListener('click', () => {
+        const items = visibleItems();
+        currentIndex = items.indexOf(wrap.closest('.gallery-item'));
+        openLightbox(items, currentIndex);
+      });
+    });
+
+    function openLightbox(items, idx) {
+      const item = items[idx];
+      const img = item.querySelector('img');
+      const label = item.dataset.label || '';
+      lightboxImg.src = img.src;
+      lightboxCaption.textContent = label;
+      lightbox.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function navigateLightbox(dir) {
+      const items = visibleItems();
+      if (items.length === 0) return;
+      currentIndex = (currentIndex + dir + items.length) % items.length;
+      const item = items[currentIndex];
+      const img = item.querySelector('img');
+      const label = item.dataset.label || '';
+      lightboxImg.src = img.src;
+      lightboxCaption.textContent = label;
+    }
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxPrev.addEventListener('click', () => navigateLightbox(-1));
+    lightboxNext.addEventListener('click', () => navigateLightbox(1));
+
+    lightbox.addEventListener('click', e => {
+      if (e.target === lightbox) closeLightbox();
+    });
+
+    document.addEventListener('keydown', e => {
+      if (!lightbox.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft') navigateLightbox(-1);
+      if (e.key === 'ArrowRight') navigateLightbox(1);
     });
   </script>
 </body>
