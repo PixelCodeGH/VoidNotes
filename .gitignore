@@ -11,3 +11,4 @@ release/
 # IDE / system junk
 .DS_Store
 Thumbs.db
+.vercel
