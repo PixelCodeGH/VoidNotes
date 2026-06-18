@@ -1,6 +1,6 @@
 # Void Notes
 
-[![Website](https://img.shields.io/badge/website-live-f0f0f0?style=flat&logo=googlechrome&logoColor=0a0a0a)](https://brutal-build.github.io/VoidNotes/)
+[![Website](https://img.shields.io/badge/website-live-f0f0f0?style=flat&logo=googlechrome&logoColor=0a0a0a)](https://brutalportfolio-three.vercel.app/)
 
 > A minimalist, brutalist-styled Markdown **second-brain** notepad.
 
