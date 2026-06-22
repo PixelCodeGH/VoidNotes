@@ -21,7 +21,7 @@
 
 ## Overview
 
-Void Notes is a privacy-focused second-brain notepad inspired by Obsidian. Every note is a plain `.md` file on your disk — no proprietary format, no cloud dependency, no telemetry. Just you and your markdown.
+Void Notes is a privacy-focused second-brain notepad inspired by Obsidian. Every note is a plain `.md` file on your disk  no proprietary format, no cloud dependency, no telemetry. Just you and your markdown.
 
 Choose from four built-in themes, use Vim keybindings, explore your notes through an interactive graph view, and keep everything under your control.
 
